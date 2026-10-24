@@ -342,6 +342,7 @@ function databaseApiPlugin(): Plugin {
 }
 
 export default defineConfig({
+  base: '/Teacher-s-Portal-Log-In-Page/',
   plugins: [
     react(),
     tailwindcss(),
