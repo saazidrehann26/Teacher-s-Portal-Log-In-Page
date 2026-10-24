@@ -3,6 +3,7 @@ import {
   useEffect,
   type FormEvent,
 } from "react";
+import academicBg from "./assets/academic-bg.jpg";
 import {
   getDatabaseUsers,
   isEmailRegisteredInDatabase,
@@ -65,79 +66,56 @@ function getPasswordStrength(password: string): { score: number; label: string }
 }
 
 // ============================================================================
-// Minimal Logo Component (White Badge with Pure White Backlit Halo)
+// Logo Badge with Glowing White Glass Box and Vibrant Halo Effect
 // ============================================================================
 
-function MinimalLogo({ className = "w-10 h-10" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <defs>
-        <linearGradient id="magentaGrad" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#F472B6" />
-          <stop offset="50%" stopColor="#D946EF" />
-          <stop offset="100%" stopColor="#A21CAF" />
-        </linearGradient>
-        <linearGradient id="magentaSpark" x1="38" y1="16" x2="52" y2="30" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FB7185" />
-          <stop offset="100%" stopColor="#E11D48" />
-        </linearGradient>
-      </defs>
-
-      {/* Left Folio: Study Materials & Syllabus Tracking */}
-      <path
-        d="M11 16C11 13.79 12.79 12 15 12H28C30.21 12 32 13.79 32 16V48C32 45.79 30.21 44 28 44H15C12.79 44 11 45.79 11 48V16Z"
-        stroke="url(#magentaGrad)"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* Right Folio: Question Crafting */}
-      <path
-        d="M53 16C53 13.79 51.21 12 49 12H36C33.79 12 32 13.79 32 16V48C32 45.79 33.79 44 36 44H49C51.21 44 53 45.79 53 48V16Z"
-        stroke="url(#magentaGrad)"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* Center Spine */}
-      <line x1="32" y1="14" x2="32" y2="46" stroke="url(#magentaGrad)" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
-
-      {/* Syllabus Check-lines on Left Page */}
-      <line x1="17" y1="21" x2="26" y2="21" stroke="#D946EF" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="17" y1="28" x2="26" y2="28" stroke="#D946EF" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="17" y1="35" x2="23" y2="35" stroke="#D946EF" strokeWidth="2.5" strokeLinecap="round" opacity="0.7" />
-
-      {/* Question Mark on Right Page */}
-      <path
-        d="M39 21C39 18.79 40.79 17 43 17C45.21 17 47 18.79 47 21C47 23.2 45 24.5 43.5 25.8C44 26.3 44 27.2 44 28"
-        stroke="url(#magentaSpark)"
-        strokeWidth="2.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="44" cy="34" r="1.8" fill="url(#magentaSpark)" />
-
-      {/* Top Knowledge Beacon */}
-      <circle cx="32" cy="7" r="2.5" fill="#F43F5E" />
-    </svg>
-  );
-}
-
-// Logo Badge with White Background and Pure White Backlit Glow
 export function LogoBadge() {
   return (
     <div className="relative group/badge mb-4">
-      {/* White backlit halo */}
+      {/* Heavy blur vibrant halo effect */}
       <div
-        className="absolute -inset-2 rounded-2xl bg-white blur-xl opacity-75 dark:opacity-85 group-hover/badge:opacity-100 group-hover/badge:blur-2xl transition-all duration-300 shadow-[0_0_25px_rgba(255,255,255,0.7)]"
+        className="absolute -inset-2 rounded-2xl bg-white/40 blur-xl opacity-80 group-hover/badge:opacity-100 group-hover/badge:blur-2xl transition-all duration-300 pointer-events-none"
         aria-hidden="true"
       />
-      {/* Solid white badge container */}
-      <div className="relative h-16 w-16 rounded-2xl bg-white border border-zinc-200/90 dark:border-white/20 shadow-xl shadow-black/20 flex items-center justify-center p-2.5 transition-transform duration-200 group-hover/badge:scale-105">
-        <MinimalLogo className="w-full h-full" />
+      {/* Small, glowing white glass box with heavy blur */}
+      <div
+        className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-white/15 backdrop-blur-2xl border border-white/30 flex items-center justify-center p-3 transition-transform duration-200 group-hover/badge:scale-105"
+        style={{
+          boxShadow: "0 0 25px rgba(255, 255, 255, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.4)",
+        }}
+      >
+        <svg
+          className="w-8 h-8 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+          />
+        </svg>
       </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Dark Academic Background (100% Crisp, Pure, Unblurred Wallpaper)
+// ============================================================================
+
+function AcademicBackground() {
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 select-none" aria-hidden="true">
+      {/* 100% Crisp, Clear, Unblurred Dark Academic Wallpaper */}
+      <img
+        src={academicBg}
+        alt="Academic Background"
+        className="absolute inset-0 w-full h-full object-cover object-center"
+      />
     </div>
   );
 }
@@ -497,22 +475,19 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-slate-900/5 dark:bg-[#0b030e] px-4 py-8 sm:px-6 lg:px-8 font-sans antialiased text-zinc-900 dark:text-zinc-100 transition-colors selection:bg-fuchsia-500 selection:text-white">
-      {/* Ambient Radial Magenta Lighting Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10" aria-hidden="true">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[400px] bg-gradient-to-tr from-fuchsia-600/25 via-pink-500/20 to-rose-600/15 rounded-full blur-[140px]" />
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[560px] h-[300px] bg-gradient-to-r from-fuchsia-800/20 via-pink-600/15 to-rose-950/20 rounded-full blur-[130px]" />
-      </div>
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-transparent px-4 py-8 sm:px-6 lg:px-8 font-sans antialiased text-zinc-900 dark:text-zinc-100 transition-colors selection:bg-fuchsia-500 selection:text-white">
+      {/* Dark Academic Wallpaper & Glowing Neon Mathematical Formulas Layer */}
+      <AcademicBackground />
 
-      {/* Theme Changing Button */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+      {/* Theme Changing Button (Glass Pill) */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
         <button
           type="button"
           onClick={() => setIsDark(!isDark)}
           aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-          className="relative group flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-fuchsia-200/80 dark:border-fuchsia-800/60 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-fuchsia-600 dark:hover:text-fuchsia-300 shadow-sm transition-all"
+          className="relative group flex items-center gap-2 px-4 py-2 rounded-full glass-input-box text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:text-fuchsia-600 dark:hover:text-fuchsia-300 shadow-lg cursor-pointer transition-all"
         >
-          <div className="absolute -inset-0.5 rounded-full bg-fuchsia-500/25 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
           <span className="relative flex items-center gap-1.5">
             {isDark ? (
               <>
@@ -537,17 +512,11 @@ export default function App() {
       {/* 1. LOGIN PAGE VIEW                                                   */}
       {/* ==================================================================== */}
       {view === "login" && (
-        <div className="relative w-full max-w-md">
-          {/* Soft Ambient Card Backlight (Magenta) */}
-          <div
-            className="absolute -inset-1.5 rounded-3xl bg-gradient-to-b from-fuchsia-500/25 via-pink-600/15 to-transparent blur-xl pointer-events-none"
-            aria-hidden="true"
-          />
-
-          <main className="relative w-full bg-white/95 dark:bg-[#130616]/95 backdrop-blur-xl border border-fuchsia-200/60 dark:border-fuchsia-900/40 rounded-2xl shadow-2xl shadow-fuchsia-950/20 p-6 sm:p-8 transition-all">
+        <div className="relative z-10 w-full max-w-md">
+          <main className="relative w-full login-card glass-panel glass-gradient-border glass-specular-top rounded-3xl p-7 sm:p-9 transition-all">
             <header className="flex flex-col items-center text-center mb-8">
               <LogoBadge />
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+              <h1 className="text-2xl tracking-tight bright-heading">
                 Welcome back
               </h1>
             </header>
@@ -555,9 +524,9 @@ export default function App() {
             {loginNotice && (
               <div
                 role="status"
-                className="mb-6 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-700/60 text-emerald-850 dark:text-emerald-200 text-sm flex items-center gap-2.5 shadow-sm"
+                className="mb-6 p-4 rounded-xl bg-emerald-500/15 border border-emerald-400/60 text-emerald-200 text-sm flex items-center gap-2.5 shadow-sm backdrop-blur-md font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
-                <svg className="w-5 h-5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <svg className="w-5 h-5 flex-shrink-0 text-emerald-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5z" clipRule="evenodd" />
                 </svg>
                 <span>{loginNotice}</span>
@@ -567,9 +536,9 @@ export default function App() {
             {loginSuccess && (
               <div
                 role="status"
-                className="mb-6 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm flex items-center gap-2"
+                className="mb-6 p-4 rounded-xl bg-emerald-500/15 border border-emerald-400/60 text-emerald-200 text-sm flex items-center gap-2 backdrop-blur-md font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
-                <svg className="w-5 h-5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <svg className="w-5 h-5 flex-shrink-0 text-emerald-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5z" clipRule="evenodd" />
                 </svg>
                 <span>
@@ -583,9 +552,9 @@ export default function App() {
             {loginErrors.general && (
               <div
                 role="alert"
-                className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 text-sm flex items-center gap-2"
+                className="mb-6 p-4 rounded-xl bg-red-500/15 border border-red-400/60 text-red-200 text-sm flex items-center gap-2 backdrop-blur-md font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
-                <svg className="w-5 h-5 flex-shrink-0 text-red-600 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <svg className="w-5 h-5 flex-shrink-0 text-red-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" clipRule="evenodd" />
                 </svg>
                 <span>{loginErrors.general}</span>
@@ -593,13 +562,13 @@ export default function App() {
             )}
 
             <form onSubmit={handleLoginSubmit} noValidate className="space-y-5">
-              {/* Email Bar: "Enter you e-mail" */}
+              {/* Email Bar */}
               <div>
                 <label
                   htmlFor="email"
-                  className="font-label block text-sm font-semibold tracking-wide text-zinc-800 dark:text-zinc-200 mb-1.5"
+                  className="font-label block text-sm tracking-wide bright-label mb-2"
                 >
-                  Enter you e-mail
+                  Enter your e-mail
                 </label>
 
                 <div className="relative group">
@@ -607,7 +576,7 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
                       loginErrors.email
                         ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-30 group-hover:opacity-75 group-focus-within:opacity-100 group-focus-within:blur-lg"
+                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
                     }`}
                     aria-hidden="true"
                   />
@@ -624,17 +593,17 @@ export default function App() {
                       onChange={(e) => setLoginValues((prev) => ({ ...prev, email: e.target.value }))}
                       aria-invalid={Boolean(loginErrors.email)}
                       aria-describedby={loginErrors.email ? "email-error" : undefined}
-                      className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all outline-none bg-white dark:bg-[#18081c] disabled:opacity-60 disabled:cursor-not-allowed ${
+                      className={`w-full px-4 py-3 rounded-xl text-sm transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed ${
                         loginErrors.email
-                          ? "border-red-500 text-red-900 dark:text-red-200 focus:ring-2 focus:ring-red-500/20"
-                          : "border-fuchsia-200/70 dark:border-fuchsia-900/40 hover:border-fuchsia-400/80 dark:hover:border-fuchsia-600/70 focus:border-fuchsia-500 dark:focus:border-fuchsia-400 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-fuchsia-500/20"
+                          ? "!border-red-500 !text-red-200"
+                          : ""
                       }`}
                     />
                   </div>
                 </div>
 
                 {loginErrors.email && (
-                  <p id="email-error" role="alert" className="mt-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                  <p id="email-error" role="alert" className="mt-1.5 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {loginErrors.email}
                   </p>
                 )}
@@ -644,7 +613,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="password"
-                  className="font-label block text-sm font-semibold tracking-wide text-zinc-800 dark:text-zinc-200 mb-1.5"
+                  className="font-label block text-sm tracking-wide bright-label mb-2"
                 >
                   Password
                 </label>
@@ -654,7 +623,7 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
                       loginErrors.password
                         ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-30 group-hover:opacity-75 group-focus-within:opacity-100 group-focus-within:blur-lg"
+                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
                     }`}
                     aria-hidden="true"
                   />
@@ -671,10 +640,10 @@ export default function App() {
                       onChange={(e) => setLoginValues((prev) => ({ ...prev, password: e.target.value }))}
                       aria-invalid={Boolean(loginErrors.password)}
                       aria-describedby={loginErrors.password ? "password-error" : undefined}
-                      className={`w-full pl-4 pr-11 py-2.5 rounded-lg border text-sm transition-all outline-none bg-white dark:bg-[#18081c] disabled:opacity-60 disabled:cursor-not-allowed ${
+                      className={`w-full pl-4 pr-11 py-3 rounded-xl text-sm transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed ${
                         loginErrors.password
-                          ? "border-red-500 text-red-900 dark:text-red-200 focus:ring-2 focus:ring-red-500/20"
-                          : "border-fuchsia-200/70 dark:border-fuchsia-900/40 hover:border-fuchsia-400/80 dark:hover:border-fuchsia-600/70 focus:border-fuchsia-500 dark:focus:border-fuchsia-400 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-fuchsia-500/20"
+                          ? "!border-red-500 !text-red-200"
+                          : ""
                       }`}
                     />
                     <button
@@ -683,7 +652,7 @@ export default function App() {
                       onClick={() => setShowLoginPassword(!showLoginPassword)}
                       disabled={isLoginLoading}
                       aria-label={showLoginPassword ? "Hide password" : "Show password"}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-300 transition-colors focus:outline-none focus:text-fuchsia-600 dark:focus:text-fuchsia-400"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-300 hover:text-fuchsia-400 transition-colors focus:outline-none focus:text-fuchsia-400"
                     >
                       {showLoginPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -700,7 +669,7 @@ export default function App() {
                 </div>
 
                 {loginErrors.password && (
-                  <p id="password-error" role="alert" className="mt-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                  <p id="password-error" role="alert" className="mt-1.5 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {loginErrors.password}
                   </p>
                 )}
@@ -708,16 +677,16 @@ export default function App() {
 
               {/* Remember Me & Forgot Password Button */}
               <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
+                <label className="flex items-center gap-2.5 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     name="rememberMe"
                     checked={loginValues.rememberMe}
                     onChange={(e) => setLoginValues((prev) => ({ ...prev, rememberMe: e.target.checked }))}
                     disabled={isLoginLoading}
-                    className="w-4 h-4 rounded border-fuchsia-300 dark:border-fuchsia-900/60 text-fuchsia-600 focus:ring-fuchsia-500/30 dark:focus:ring-offset-zinc-900 cursor-pointer disabled:cursor-not-allowed accent-fuchsia-600"
+                    className="glass-checkbox disabled:cursor-not-allowed"
                   />
-                  <span className="text-zinc-600 dark:text-zinc-400 text-sm">
+                  <span className="bright-body text-sm">
                     Remember me
                   </span>
                 </label>
@@ -726,23 +695,23 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => navigateTo("forgot_email")}
-                  className="text-sm font-medium text-fuchsia-600 hover:text-fuchsia-500 dark:text-fuchsia-400 dark:hover:text-fuchsia-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500 rounded cursor-pointer"
+                  className="text-sm bright-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 rounded cursor-pointer"
                 >
                   Forgot password?
                 </button>
               </div>
 
-              {/* Submit Button Bar */}
+              {/* Submit Button Bar: "Access Teacher Portal" */}
               <div className="relative group pt-1">
                 <div
-                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-60 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
+                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
                   aria-hidden="true"
                 />
 
                 <button
                   type="submit"
                   disabled={isLoginLoading}
-                  className="relative w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-600 hover:from-fuchsia-500 hover:via-pink-500 hover:to-rose-500 active:from-fuchsia-700 active:to-rose-700 text-white font-medium text-sm transition-all duration-150 focus:outline-none focus-visible:ring-4 focus-visible:ring-fuchsia-500/40 disabled:opacity-70 disabled:cursor-not-allowed shadow-md shadow-fuchsia-950/30 active:scale-[0.99] cursor-pointer"
+                  className="relative w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-white font-bold tracking-wide text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-pink-500/40 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer glass-button-glow glass-sheen"
                 >
                   {isLoginLoading ? (
                     <>
@@ -760,12 +729,12 @@ export default function App() {
             </form>
 
             {/* Footer */}
-            <footer className="mt-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <footer className="mt-8 text-center text-sm bright-body">
               Need a new teacher account?{" "}
               <button
                 type="button"
                 onClick={() => navigateTo("register")}
-                className="font-medium text-fuchsia-600 hover:text-fuchsia-500 dark:text-fuchsia-400 dark:hover:text-fuchsia-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500 rounded cursor-pointer"
+                className="bright-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 rounded cursor-pointer"
               >
                 Register
               </button>
@@ -778,16 +747,11 @@ export default function App() {
       {/* 2. REGISTER PAGE VIEW                                                */}
       {/* ==================================================================== */}
       {view === "register" && (
-        <div className="relative w-full max-w-lg">
-          <div
-            className="absolute -inset-1.5 rounded-3xl bg-gradient-to-b from-fuchsia-500/25 via-pink-600/15 to-transparent blur-xl pointer-events-none"
-            aria-hidden="true"
-          />
-
-          <main className="relative w-full bg-white/95 dark:bg-[#130616]/95 backdrop-blur-xl border border-fuchsia-200/60 dark:border-fuchsia-900/40 rounded-2xl shadow-2xl shadow-fuchsia-950/20 p-6 sm:p-8 transition-all">
+        <div className="relative z-10 w-full max-w-lg">
+          <main className="relative w-full login-card glass-panel glass-gradient-border glass-specular-top rounded-3xl p-7 sm:p-9 transition-all">
             <header className="flex flex-col items-center text-center mb-7">
               <LogoBadge />
-              <h1 className="text-[25px] font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+              <h1 className="text-[25px] tracking-tight bright-heading">
                 Register
               </h1>
             </header>
@@ -795,9 +759,9 @@ export default function App() {
             {regErrors.general && (
               <div
                 role="alert"
-                className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 text-[15px] flex items-center gap-2"
+                className="mb-6 p-4 rounded-xl bg-red-500/15 border border-red-400/60 text-red-200 text-[15px] flex items-center gap-2 backdrop-blur-md font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
-                <svg className="w-5 h-5 flex-shrink-0 text-red-600 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <svg className="w-5 h-5 flex-shrink-0 text-red-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" clipRule="evenodd" />
                 </svg>
                 <span>{regErrors.general}</span>
@@ -809,7 +773,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="reg-fullName"
-                  className="font-label block text-[15px] font-semibold tracking-wide text-zinc-800 dark:text-zinc-200 mb-1.5"
+                  className="font-label block text-[15px] tracking-wide bright-label mb-1.5"
                 >
                   Enter Your Full Name
                 </label>
@@ -819,7 +783,7 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
                       regErrors.fullName
                         ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-30 group-hover:opacity-75 group-focus-within:opacity-100 group-focus-within:blur-lg"
+                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
                     }`}
                     aria-hidden="true"
                   />
@@ -833,12 +797,12 @@ export default function App() {
                       disabled={isRegLoading}
                       value={regValues.fullName}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, fullName: e.target.value }))}
-                      className="w-full px-4 py-2.5 rounded-lg border text-[15px] transition-all outline-none bg-white dark:bg-[#18081c] border-fuchsia-200/70 dark:border-fuchsia-900/40 hover:border-fuchsia-400/80 dark:hover:border-fuchsia-600/70 focus:border-fuchsia-500 dark:focus:border-fuchsia-400 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-fuchsia-500/20"
+                      className="w-full px-4 py-3 rounded-xl text-[15px] transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
                 {regErrors.fullName && (
-                  <p role="alert" className="mt-1.5 text-[13px] text-red-600 dark:text-red-400 font-medium">
+                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {regErrors.fullName}
                   </p>
                 )}
@@ -848,7 +812,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="reg-institutionName"
-                  className="font-label block text-[15px] font-semibold tracking-wide text-zinc-800 dark:text-zinc-200 mb-1.5"
+                  className="font-label block text-[15px] tracking-wide bright-label mb-1.5"
                 >
                   Enter Institution Name:
                 </label>
@@ -858,7 +822,7 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
                       regErrors.institutionName
                         ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-30 group-hover:opacity-75 group-focus-within:opacity-100 group-focus-within:blur-lg"
+                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
                     }`}
                     aria-hidden="true"
                   />
@@ -872,12 +836,12 @@ export default function App() {
                       disabled={isRegLoading}
                       value={regValues.institutionName}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, institutionName: e.target.value }))}
-                      className="w-full px-4 py-2.5 rounded-lg border text-[15px] transition-all outline-none bg-white dark:bg-[#18081c] border-fuchsia-200/70 dark:border-fuchsia-900/40 hover:border-fuchsia-400/80 dark:hover:border-fuchsia-600/70 focus:border-fuchsia-500 dark:focus:border-fuchsia-400 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-fuchsia-500/20"
+                      className="w-full px-4 py-3 rounded-xl text-[15px] transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
                 {regErrors.institutionName && (
-                  <p role="alert" className="mt-1.5 text-[13px] text-red-600 dark:text-red-400 font-medium">
+                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {regErrors.institutionName}
                   </p>
                 )}
@@ -887,7 +851,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="reg-email"
-                  className="font-label block text-[15px] font-semibold tracking-wide text-zinc-800 dark:text-zinc-200 mb-1.5"
+                  className="font-label block text-[15px] tracking-wide bright-label mb-1.5"
                 >
                   Enter Institution/Personal Mail
                 </label>
@@ -897,7 +861,7 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
                       regErrors.email
                         ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-30 group-hover:opacity-75 group-focus-within:opacity-100 group-focus-within:blur-lg"
+                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
                     }`}
                     aria-hidden="true"
                   />
@@ -911,12 +875,12 @@ export default function App() {
                       disabled={isRegLoading}
                       value={regValues.email}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-4 py-2.5 rounded-lg border text-[15px] transition-all outline-none bg-white dark:bg-[#18081c] border-fuchsia-200/70 dark:border-fuchsia-900/40 hover:border-fuchsia-400/80 dark:hover:border-fuchsia-600/70 focus:border-fuchsia-500 dark:focus:border-fuchsia-400 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-fuchsia-500/20"
+                      className="w-full px-4 py-3 rounded-xl text-[15px] transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
                 {regErrors.email && (
-                  <p role="alert" className="mt-1.5 text-[13px] text-red-600 dark:text-red-400 font-medium">
+                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {regErrors.email}
                   </p>
                 )}
@@ -926,7 +890,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="reg-password"
-                  className="font-label block text-[15px] font-semibold tracking-wide text-zinc-800 dark:text-zinc-200 mb-1.5"
+                  className="font-label block text-[15px] tracking-wide bright-label mb-1.5"
                 >
                   Enter Password
                 </label>
@@ -936,7 +900,7 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
                       regErrors.password
                         ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-30 group-hover:opacity-75 group-focus-within:opacity-100 group-focus-within:blur-lg"
+                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
                     }`}
                     aria-hidden="true"
                   />
@@ -950,7 +914,7 @@ export default function App() {
                       disabled={isRegLoading}
                       value={regValues.password}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, password: e.target.value }))}
-                      className="w-full pl-4 pr-11 py-2.5 rounded-lg border text-[15px] transition-all outline-none bg-white dark:bg-[#18081c] border-fuchsia-200/70 dark:border-fuchsia-900/40 hover:border-fuchsia-400/80 dark:hover:border-fuchsia-600/70 focus:border-fuchsia-500 dark:focus:border-fuchsia-400 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-fuchsia-500/20"
+                      className="w-full pl-4 pr-11 py-3 rounded-xl text-[15px] transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -958,14 +922,14 @@ export default function App() {
                       onClick={() => setShowRegPassword(!showRegPassword)}
                       disabled={isRegLoading}
                       aria-label={showRegPassword ? "Hide password" : "Show password"}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-300 transition-colors focus:outline-none focus:text-fuchsia-600 dark:focus:text-fuchsia-400"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-300 hover:text-fuchsia-400 transition-colors focus:outline-none focus:text-fuchsia-400"
                     >
                       {showRegPassword ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
                         </svg>
                       ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -977,8 +941,8 @@ export default function App() {
                 {regValues.password.length > 0 && (
                   <div className="mt-2 space-y-1 transition-all">
                     <div className="flex items-center justify-between text-[13px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">Password strength</span>
-                      <span className="font-medium text-fuchsia-600 dark:text-fuchsia-400">
+                      <span className="bright-body text-[13px]">Password strength</span>
+                      <span className="font-bold text-[#ff66c4] drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">
                         {regPasswordStrength.label}
                       </span>
                     </div>
@@ -986,7 +950,7 @@ export default function App() {
                       {[1, 2, 3, 4].map((step) => {
                         const isActive = regPasswordStrength.score >= step;
                         return (
-                          <div key={step} className="relative h-1.5 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800">
+                          <div key={step} className="relative h-1.5 rounded-full overflow-hidden bg-white/20">
                             {isActive && (
                               <div className="h-full w-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 shadow-[0_0_8px_rgba(217,70,239,0.9)] transition-all duration-300" />
                             )}
@@ -997,7 +961,7 @@ export default function App() {
                   </div>
                 )}
                 {regErrors.password && (
-                  <p role="alert" className="mt-1.5 text-[13px] text-red-600 dark:text-red-400 font-medium">
+                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {regErrors.password}
                   </p>
                 )}
@@ -1007,7 +971,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="reg-confirmPassword"
-                  className="font-label block text-[15px] font-semibold tracking-wide text-zinc-800 dark:text-zinc-200 mb-1.5"
+                  className="font-label block text-[15px] tracking-wide bright-label mb-1.5"
                 >
                   Enter Password Again
                 </label>
@@ -1017,7 +981,7 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
                       regErrors.confirmPassword
                         ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-30 group-hover:opacity-75 group-focus-within:opacity-100 group-focus-within:blur-lg"
+                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
                     }`}
                     aria-hidden="true"
                   />
@@ -1031,7 +995,7 @@ export default function App() {
                       disabled={isRegLoading}
                       value={regValues.confirmPassword}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                      className="w-full pl-4 pr-11 py-2.5 rounded-lg border text-[15px] transition-all outline-none bg-white dark:bg-[#18081c] border-fuchsia-200/70 dark:border-fuchsia-900/40 hover:border-fuchsia-400/80 dark:hover:border-fuchsia-600/70 focus:border-fuchsia-500 dark:focus:border-fuchsia-400 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-fuchsia-500/20"
+                      className="w-full pl-4 pr-11 py-3 rounded-xl text-[15px] transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -1039,14 +1003,14 @@ export default function App() {
                       onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
                       disabled={isRegLoading}
                       aria-label={showRegConfirmPassword ? "Hide password" : "Show password"}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-300 transition-colors focus:outline-none focus:text-fuchsia-600 dark:focus:text-fuchsia-400"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-300 hover:text-fuchsia-400 transition-colors focus:outline-none focus:text-fuchsia-400"
                     >
                       {showRegConfirmPassword ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
                         </svg>
                       ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -1055,7 +1019,7 @@ export default function App() {
                   </div>
                 </div>
                 {regErrors.confirmPassword && (
-                  <p role="alert" className="mt-1.5 text-[13px] text-red-600 dark:text-red-400 font-medium">
+                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {regErrors.confirmPassword}
                   </p>
                 )}
@@ -1064,14 +1028,14 @@ export default function App() {
               {/* Submit Button Bar: "Register" */}
               <div className="relative group pt-3">
                 <div
-                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-60 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
+                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
                   aria-hidden="true"
                 />
 
                 <button
                   type="submit"
                   disabled={isRegLoading}
-                  className="relative w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-600 hover:from-fuchsia-500 hover:via-pink-500 hover:to-rose-500 active:from-fuchsia-700 active:to-rose-700 text-white font-medium text-[15px] transition-all duration-150 focus:outline-none focus-visible:ring-4 focus-visible:ring-fuchsia-500/40 disabled:opacity-70 disabled:cursor-not-allowed shadow-md shadow-fuchsia-950/30 active:scale-[0.99] cursor-pointer"
+                  className="relative w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-white font-bold tracking-wide text-[15px] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-pink-500/40 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer glass-button-glow glass-sheen"
                 >
                   {isRegLoading ? (
                     <>
@@ -1088,12 +1052,12 @@ export default function App() {
               </div>
             </form>
 
-            <footer className="mt-7 text-center text-[15px] text-zinc-500 dark:text-zinc-400">
+            <footer className="mt-7 text-center text-[15px] bright-body">
               Already have an account?{" "}
               <button
                 type="button"
                 onClick={() => navigateTo("login")}
-                className="font-medium text-fuchsia-600 hover:text-fuchsia-500 dark:text-fuchsia-400 dark:hover:text-fuchsia-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500 rounded cursor-pointer"
+                className="bright-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 rounded cursor-pointer"
               >
                 Sign in
               </button>
@@ -1106,19 +1070,14 @@ export default function App() {
       {/* 3. FORGOT PASSWORD STEP 1: "Recover Your Portal"                      */}
       {/* ==================================================================== */}
       {view === "forgot_email" && (
-        <div className="relative w-full max-w-md">
-          <div
-            className="absolute -inset-1.5 rounded-3xl bg-gradient-to-b from-fuchsia-500/25 via-pink-600/15 to-transparent blur-xl pointer-events-none"
-            aria-hidden="true"
-          />
-
-          <main className="relative w-full bg-white/95 dark:bg-[#130616]/95 backdrop-blur-xl border border-fuchsia-200/60 dark:border-fuchsia-900/40 rounded-2xl shadow-2xl shadow-fuchsia-950/20 p-6 sm:p-8 transition-all">
+        <div className="relative z-10 w-full max-w-md">
+          <main className="relative w-full login-card glass-panel glass-gradient-border glass-specular-top rounded-3xl p-7 sm:p-9 transition-all">
             <header className="flex flex-col items-center text-center mb-7">
               <LogoBadge />
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+              <h1 className="text-2xl tracking-tight bright-heading">
                 Recover Your Portal
               </h1>
-              <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-1.5 text-xs bright-body">
                 Enter your registered email address to check our database and receive an OTP.
               </p>
             </header>
@@ -1128,7 +1087,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="recover-email"
-                  className="font-label block text-sm font-semibold tracking-wide text-zinc-800 dark:text-zinc-200 mb-1.5"
+                  className="font-label block text-sm tracking-wide bright-label mb-2"
                 >
                   Enter Your E-mail
                 </label>
@@ -1138,7 +1097,7 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
                       recoverEmailError
                         ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-30 group-hover:opacity-75 group-focus-within:opacity-100 group-focus-within:blur-lg"
+                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
                     }`}
                     aria-hidden="true"
                   />
@@ -1156,13 +1115,13 @@ export default function App() {
                         setRecoverEmail(e.target.value);
                         if (recoverEmailError) setRecoverEmailError(undefined);
                       }}
-                      className="w-full px-4 py-2.5 rounded-lg border text-sm transition-all outline-none bg-white dark:bg-[#18081c] border-fuchsia-200/70 dark:border-fuchsia-900/40 hover:border-fuchsia-400/80 dark:hover:border-fuchsia-600/70 focus:border-fuchsia-500 dark:focus:border-fuchsia-400 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-fuchsia-500/20"
+                      className="w-full px-4 py-3 rounded-xl text-sm transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
 
                 {recoverEmailError && (
-                  <p role="alert" className="mt-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                  <p role="alert" className="mt-1.5 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {recoverEmailError}
                   </p>
                 )}
@@ -1171,14 +1130,14 @@ export default function App() {
               {/* Submit Button Bar */}
               <div className="relative group pt-1">
                 <div
-                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-60 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
+                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
                   aria-hidden="true"
                 />
 
                 <button
                   type="submit"
                   disabled={isCheckingEmail}
-                  className="relative w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-600 hover:from-fuchsia-500 hover:via-pink-500 hover:to-rose-500 active:from-fuchsia-700 active:to-rose-700 text-white font-medium text-sm transition-all duration-150 focus:outline-none focus-visible:ring-4 focus-visible:ring-fuchsia-500/40 disabled:opacity-70 disabled:cursor-not-allowed shadow-md shadow-fuchsia-950/30 active:scale-[0.99] cursor-pointer"
+                  className="relative w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-white font-bold tracking-wide text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-pink-500/40 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer glass-button-glow glass-sheen"
                 >
                   {isCheckingEmail ? (
                     <>
@@ -1195,12 +1154,12 @@ export default function App() {
               </div>
             </form>
 
-            <footer className="mt-7 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <footer className="mt-7 text-center text-sm bright-body">
               Remembered your credentials?{" "}
               <button
                 type="button"
                 onClick={() => navigateTo("login")}
-                className="font-medium text-fuchsia-600 hover:text-fuchsia-500 dark:text-fuchsia-400 dark:hover:text-fuchsia-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500 rounded cursor-pointer"
+                className="bright-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 rounded cursor-pointer"
               >
                 Sign in
               </button>
@@ -1230,20 +1189,15 @@ export default function App() {
       {/* 5. FORGOT PASSWORD STEP 3: "Welcome Back" (Reset Password)            */}
       {/* ==================================================================== */}
       {view === "forgot_reset" && (
-        <div className="relative w-full max-w-md">
-          <div
-            className="absolute -inset-1.5 rounded-3xl bg-gradient-to-b from-fuchsia-500/25 via-pink-600/15 to-transparent blur-xl pointer-events-none"
-            aria-hidden="true"
-          />
-
-          <main className="relative w-full bg-white/95 dark:bg-[#130616]/95 backdrop-blur-xl border border-fuchsia-200/60 dark:border-fuchsia-900/40 rounded-2xl shadow-2xl shadow-fuchsia-950/20 p-6 sm:p-8 transition-all">
+        <div className="relative z-10 w-full max-w-md">
+          <main className="relative w-full login-card glass-panel glass-gradient-border glass-specular-top rounded-3xl p-7 sm:p-9 transition-all">
             <header className="flex flex-col items-center text-center mb-7">
               <LogoBadge />
               {/* Required Heading: "Welcome Back" */}
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+              <h1 className="text-2xl tracking-tight bright-heading">
                 Welcome Back
               </h1>
-              <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-1.5 text-xs bright-body">
                 Create a strong new password to secure your teacher workspace.
               </p>
             </header>
@@ -1253,7 +1207,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="new-password"
-                  className="font-label block text-sm font-semibold tracking-wide text-zinc-800 dark:text-zinc-200 mb-1.5"
+                  className="font-label block text-sm tracking-wide bright-label mb-2"
                 >
                   Enter New password
                 </label>
@@ -1263,7 +1217,7 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
                       resetErrors.password
                         ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-30 group-hover:opacity-75 group-focus-within:opacity-100 group-focus-within:blur-lg"
+                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
                     }`}
                     aria-hidden="true"
                   />
@@ -1280,7 +1234,7 @@ export default function App() {
                         setNewPassword(e.target.value);
                         if (resetErrors.password) setResetErrors((prev) => ({ ...prev, password: undefined }));
                       }}
-                      className="w-full pl-4 pr-11 py-2.5 rounded-lg border text-sm transition-all outline-none bg-white dark:bg-[#18081c] border-fuchsia-200/70 dark:border-fuchsia-900/40 hover:border-fuchsia-400/80 dark:hover:border-fuchsia-600/70 focus:border-fuchsia-500 dark:focus:border-fuchsia-400 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-fuchsia-500/20"
+                      className="w-full pl-4 pr-11 py-3 rounded-xl text-sm transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -1288,7 +1242,7 @@ export default function App() {
                       onClick={() => setShowNewPassword(!showNewPassword)}
                       disabled={isRecovering}
                       aria-label={showNewPassword ? "Hide password" : "Show password"}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-300 transition-colors focus:outline-none focus:text-fuchsia-600 dark:focus:text-fuchsia-400"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-300 hover:text-fuchsia-400 transition-colors focus:outline-none focus:text-fuchsia-400"
                     >
                       {showNewPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1307,8 +1261,8 @@ export default function App() {
                 {newPassword.length > 0 && (
                   <div className="mt-2 space-y-1 transition-all">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-zinc-500 dark:text-zinc-400">Password strength</span>
-                      <span className="font-medium text-fuchsia-600 dark:text-fuchsia-400">
+                      <span className="bright-body text-xs">Password strength</span>
+                      <span className="font-bold text-[#ff66c4] drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">
                         {newPasswordStrength.label}
                       </span>
                     </div>
@@ -1316,7 +1270,7 @@ export default function App() {
                       {[1, 2, 3, 4].map((step) => {
                         const isActive = newPasswordStrength.score >= step;
                         return (
-                          <div key={step} className="relative h-1.5 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800">
+                          <div key={step} className="relative h-1.5 rounded-full overflow-hidden bg-white/20">
                             {isActive && (
                               <div className="h-full w-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 shadow-[0_0_8px_rgba(217,70,239,0.9)] transition-all duration-300" />
                             )}
@@ -1328,7 +1282,7 @@ export default function App() {
                 )}
 
                 {resetErrors.password && (
-                  <p role="alert" className="mt-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                  <p role="alert" className="mt-1.5 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {resetErrors.password}
                   </p>
                 )}
@@ -1338,7 +1292,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="confirm-new-password"
-                  className="font-label block text-sm font-semibold tracking-wide text-zinc-800 dark:text-zinc-200 mb-1.5"
+                  className="font-label block text-sm tracking-wide bright-label mb-2"
                 >
                   Enter your password again
                 </label>
@@ -1348,7 +1302,7 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
                       resetErrors.confirm
                         ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-30 group-hover:opacity-75 group-focus-within:opacity-100 group-focus-within:blur-lg"
+                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
                     }`}
                     aria-hidden="true"
                   />
@@ -1365,7 +1319,7 @@ export default function App() {
                         setConfirmNewPassword(e.target.value);
                         if (resetErrors.confirm) setResetErrors((prev) => ({ ...prev, confirm: undefined }));
                       }}
-                      className="w-full pl-4 pr-11 py-2.5 rounded-lg border text-sm transition-all outline-none bg-white dark:bg-[#18081c] border-fuchsia-200/70 dark:border-fuchsia-900/40 hover:border-fuchsia-400/80 dark:hover:border-fuchsia-600/70 focus:border-fuchsia-500 dark:focus:border-fuchsia-400 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-fuchsia-500/20"
+                      className="w-full pl-4 pr-11 py-3 rounded-xl text-sm transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -1373,7 +1327,7 @@ export default function App() {
                       onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
                       disabled={isRecovering}
                       aria-label={showConfirmNewPassword ? "Hide password" : "Show password"}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-300 transition-colors focus:outline-none focus:text-fuchsia-600 dark:focus:text-fuchsia-400"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-300 hover:text-fuchsia-400 transition-colors focus:outline-none focus:text-fuchsia-400"
                     >
                       {showConfirmNewPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1390,7 +1344,7 @@ export default function App() {
                 </div>
 
                 {resetErrors.confirm && (
-                  <p role="alert" className="mt-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                  <p role="alert" className="mt-1.5 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {resetErrors.confirm}
                   </p>
                 )}
@@ -1399,14 +1353,14 @@ export default function App() {
               {/* Action Button at Bottom Middle: "Recover" */}
               <div className="relative group pt-2">
                 <div
-                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-60 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
+                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
                   aria-hidden="true"
                 />
 
                 <button
                   type="submit"
                   disabled={isRecovering}
-                  className="relative w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-600 hover:from-fuchsia-500 hover:via-pink-500 hover:to-rose-500 active:from-fuchsia-700 active:to-rose-700 text-white font-medium text-sm transition-all duration-150 focus:outline-none focus-visible:ring-4 focus-visible:ring-fuchsia-500/40 disabled:opacity-70 disabled:cursor-not-allowed shadow-md shadow-fuchsia-950/30 active:scale-[0.99] cursor-pointer"
+                  className="relative w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-white font-bold tracking-wide text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-pink-500/40 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer glass-button-glow glass-sheen"
                 >
                   {isRecovering ? (
                     <>
@@ -1423,12 +1377,12 @@ export default function App() {
               </div>
             </form>
 
-            <footer className="mt-7 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <footer className="mt-7 text-center text-sm bright-body">
               Back to portal?{" "}
               <button
                 type="button"
                 onClick={() => navigateTo("login")}
-                className="font-medium text-fuchsia-600 hover:text-fuchsia-500 dark:text-fuchsia-400 dark:hover:text-fuchsia-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500 rounded cursor-pointer"
+                className="bright-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 rounded cursor-pointer"
               >
                 Sign in
               </button>

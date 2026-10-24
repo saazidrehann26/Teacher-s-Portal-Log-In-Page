@@ -57,3 +57,229 @@
   box-shadow: 0 0 35px -2px rgba(217, 70, 239, 0.5),
               0 0 15px 0px rgba(244, 114, 182, 0.4);
 }
+
+/* ============================================================================ */
+/* Advanced Glassmorphism (Frosted Glass) Styles & Specular Highlights          */
+/* ============================================================================ */
+
+/* Main Frosted Glass Card Container (.login-card, .glass-panel) */
+.login-card,
+.glass-panel {
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+  background: rgba(14, 10, 24, 0.18);
+  border: 1px solid rgba(236, 72, 153, 0.28);
+  border-radius: 20px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(236, 72, 153, 0.08),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Translucent Glowing Gradient Border */
+.glass-gradient-border {
+  position: relative;
+}
+.glass-gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.35), rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.15));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Specular Top Rim Highlight for 3D Glass Depth */
+.glass-specular-top {
+  position: relative;
+}
+.glass-specular-top::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 2rem;
+  right: 2rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Input Fields (E-mail & Password) with Refracting Glare */
+.glass-input-box {
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, transparent 50%), rgba(16, 12, 28, 0.14);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-input-box::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.glass-input-box:focus,
+.glass-input-box:focus-within {
+  border-color: rgba(236, 72, 153, 0.7);
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 50%), rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 0 18px -2px rgba(236, 72, 153, 0.55),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+
+/* ============================================================================ */
+/* High Brightness & High Contrast Text Typography for Crisp Readability         */
+/* ============================================================================ */
+
+.bright-heading {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 14px rgba(255, 255, 255, 0.5);
+}
+
+.bright-label {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.025em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 10px rgba(255, 255, 255, 0.45);
+}
+
+.bright-body {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 8px rgba(255, 255, 255, 0.35);
+}
+
+.bright-link {
+  color: #ff52b7 !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 12px rgba(255, 82, 183, 0.9);
+  transition: all 0.2s ease;
+}
+
+.bright-link:hover {
+  color: #ffa1dd !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 18px rgba(255, 161, 221, 1);
+}
+
+/* Glassmorphic Checkbox with Tiny Check */
+.glass-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+.glass-checkbox:hover {
+  border-color: rgba(236, 72, 153, 0.6);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.glass-checkbox:checked {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  border-color: rgba(236, 72, 153, 0.8);
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+}
+
+.glass-checkbox::before {
+  content: "";
+  width: 0.6rem;
+  height: 0.6rem;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em white;
+  transform-origin: center;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.glass-checkbox:checked::before {
+  transform: scale(1);
+}
+
+/* CTA Button ("Access Teacher Portal") */
+.glass-button-glow {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: linear-gradient(90deg, #b00c87 0%, #d10a43 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow:
+    0 0 15px rgba(209, 10, 67, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  font-weight: 600;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-button-glow:hover {
+  background: linear-gradient(90deg, #c01495 0%, #e01750 100%);
+  box-shadow:
+    0 0 22px rgba(209, 10, 67, 0.7),
+    inset 0 1px 2px rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.glass-button-glow:active {
+  transform: translateY(0.5px);
+  box-shadow:
+    0 0 10px rgba(209, 10, 67, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Upper Gloss Sheen on Button */
+.glass-sheen::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent 50%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Subtle Neon Formula Floating Animation */
+@keyframes formulaFloatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.26;
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+    opacity: 0.45;
+  }
+}
+
+.formula-float {
+  animation: formulaFloatSlow 8s ease-in-out infinite;
+}
+
+.formula-float-alt {
+  animation: formulaFloatSlow 11s ease-in-out infinite reverse;
+}
