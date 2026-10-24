@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+/* Staggered Dot Wave: Each dot blinks at its own individual time */
+@keyframes staggeredDotBlink {
+  0%, 100% {
+    opacity: 0.2;
+    transform: translateY(0) scale(0.9);
+    text-shadow: 0 0 0 rgba(217, 70, 239, 0);
+  }
+  30%, 45% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.35);
+    text-shadow: 0 0 8px rgba(217, 70, 239, 0.95);
+  }
+  75% {
+    opacity: 0.3;
+    transform: translateY(0) scale(0.95);
+  }
+}
+
+.staggered-dot {
+  display: inline-block;
+  animation: staggeredDotBlink 1.4s infinite ease-in-out;
+  will-change: transform, opacity;
+}
+
+@keyframes blinkDots {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.blink-dots {
+  display: inline-block;
+  animation: blinkDots 1.1s infinite ease-in-out;
+}
+
+.font-label {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 0.025em;
+}
+
+/* Magenta Backlight Glow Utilities */
+.backlit-magenta {
+  box-shadow: 0 0 25px -4px rgba(217, 70, 239, 0.4),
+              0 0 10px -2px rgba(236, 72, 153, 0.3);
+}
+
+.backlit-magenta-lg {
+  box-shadow: 0 0 35px -2px rgba(217, 70, 239, 0.5),
+              0 0 15px 0px rgba(244, 114, 182, 0.4);
+}
