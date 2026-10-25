@@ -6,6 +6,7 @@ import {
   type ClipboardEvent,
 } from "react";
 import emailjs from "@emailjs/browser";
+import { handleWaterRipple } from "./waterRipple";
 
 export interface OtpVerificationProps {
   email: string;
@@ -332,9 +333,9 @@ export default function OtpVerification({
           {renderLogo ? renderLogo() : null}
 
           {/* Heading: "Please Wait....." with each dot blinking at different time (5 dots) */}
-          <h1 className="text-2xl tracking-tight bright-heading flex items-center justify-center">
+          <h1 className="text-[25px] sm:text-[27px] tracking-normal bright-heading flex items-center justify-center">
             <span>Please Wait</span>
-            <span className="inline-flex items-center ml-1 text-fuchsia-400 font-mono text-2xl font-black select-none drop-shadow-[0_0_8px_rgba(217,70,239,0.9)]" aria-hidden="true">
+            <span className="inline-flex items-center ml-1 text-fuchsia-400 font-mono text-[25px] sm:text-[27px] font-bold select-none drop-shadow-[0_0_8px_rgba(217,70,239,0.9)]" aria-hidden="true">
               {[0, 1, 2, 3, 4].map((i) => (
                 <span
                   key={i}
@@ -353,7 +354,7 @@ export default function OtpVerification({
           </p>
 
           <p className="text-[11px] bright-body mt-0.5">
-            Sent to: <span className="text-[#ff66c4] font-bold drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">{email}</span>
+            Sent to: <span className="text-[#ff66c4] font-semibold drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">{email}</span>
           </p>
         </header>
 
@@ -361,12 +362,12 @@ export default function OtpVerification({
         {sendStatus && (
           <div
             role="status"
-            className={`mb-5 p-3 rounded-xl border text-xs flex items-center gap-2 transition-all backdrop-blur-md font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
+            className={`mb-5 p-3 rounded-2xl border text-xs flex items-center gap-2 transition-all water-dewdrop-pill font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
               sendSuccess
-                ? "bg-emerald-500/15 border-emerald-400/60 text-emerald-200"
+                ? "border-emerald-400/50 text-emerald-200"
                 : isSending
-                ? "bg-fuchsia-500/15 border-fuchsia-400/60 text-fuchsia-200"
-                : "bg-red-500/15 border-red-400/60 text-red-200"
+                ? "border-fuchsia-400/50 text-fuchsia-200"
+                : "border-red-400/50 text-red-200"
             }`}
           >
             {isSending ? (
@@ -391,21 +392,21 @@ export default function OtpVerification({
           {/* 5-Minute Timer (Positioned directly above the OTP section) */}
           <div className="flex flex-col items-center justify-center">
             <div className="relative group">
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-fuchsia-600 to-pink-500 blur-sm opacity-50 pointer-events-none" />
-              <div className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-input-box border border-fuchsia-300/40 dark:border-fuchsia-800/60 text-xs font-semibold text-fuchsia-200 shadow-md">
-                <svg className="w-4 h-4 text-fuchsia-400 animate-spin" fill="none" viewBox="0 0 24 24" style={{ animationDuration: "6s" }}>
+              <div className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              <div className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full water-dewdrop-pill text-xs font-medium text-white shadow-md">
+                <svg className="w-4 h-4 text-white animate-spin" fill="none" viewBox="0 0 24 24" style={{ animationDuration: "6s" }}>
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                   <path className="opacity-75" fill="currentColor" d="M12 2v10l7 7" strokeWidth="2" stroke="currentColor" strokeLinecap="round" />
                 </svg>
-                <span>Expires in:</span>
-                <span className="font-mono text-sm tracking-wider font-bold text-fuchsia-300 drop-shadow-[0_0_6px_rgba(217,70,239,0.7)]">
+                <span className="text-white">Expires in:</span>
+                <span className="font-mono text-sm tracking-wider font-semibold text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.7)]">
                   {formatTimer(timerSeconds)}
                 </span>
               </div>
             </div>
 
             {timerSeconds <= 0 && (
-              <p className="mt-2 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              <p className="mt-2 text-xs text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                 Timer expired! Please click Resend Code.
               </p>
             )}
@@ -421,11 +422,7 @@ export default function OtpVerification({
               {[0, 1, 2, 3, 4].map((index) => (
                 <div key={index} className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-500 blur-md transition-all duration-300 pointer-events-none ${
-                      otp[index]
-                        ? "opacity-80 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-100"
-                    }`}
+                    className="absolute -inset-0.5 rounded-full bg-slate-300/25 blur-sm opacity-0 group-hover:opacity-60 group-focus-within:opacity-75 transition-opacity pointer-events-none"
                     aria-hidden="true"
                   />
                   <input
@@ -439,14 +436,14 @@ export default function OtpVerification({
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
                     autoFocus={index === 0}
                     aria-label={`OTP Digit ${index + 1}`}
-                    className="relative w-11 h-14 sm:w-12 sm:h-14 rounded-xl glass-input-box text-center text-2xl font-bold font-mono text-white outline-none transition-all shadow-sm"
+                    className="relative w-11 h-14 sm:w-12 sm:h-14 rounded-full glass-input-box text-center text-2xl font-semibold font-mono text-white outline-none transition-all shadow-sm"
                   />
                 </div>
               ))}
             </div>
 
             {otpError && (
-              <p role="alert" className="mt-2 text-center text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              <p role="alert" className="mt-2 text-center text-xs text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                 {otpError}
               </p>
             )}
@@ -467,26 +464,29 @@ export default function OtpVerification({
           {/* Action Button at Middle Bottom: "Continue" */}
           <div className="relative group pt-1">
             <div
-              className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
+              className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
               aria-hidden="true"
             />
 
             <button
               type="submit"
               disabled={isVerifying}
-              className="relative w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-white font-bold tracking-wide text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-pink-500/40 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer glass-button-glow glass-sheen"
+              onMouseDown={handleWaterRipple}
+              className="relative w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isVerifying ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>Verifying code...</span>
-                </>
-              ) : (
-                "Continue"
-              )}
+              <span className="relative z-20 flex items-center justify-center gap-2 text-white">
+                {isVerifying ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Verifying code...</span>
+                  </>
+                ) : (
+                  "Continue"
+                )}
+              </span>
             </button>
           </div>
           

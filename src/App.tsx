@@ -4,6 +4,7 @@ import {
   type FormEvent,
 } from "react";
 import academicBg from "./assets/Gemini_Generated_Image_v5lj6qv5lj6qv5lj.jpg";
+import webLogo from "./assets/web-logo.jpg";
 import {
   getDatabaseUsers,
   isEmailRegisteredInDatabase,
@@ -14,12 +15,30 @@ import {
   type TeacherUser,
 } from "./db";
 import OtpVerification from "./OtpVerification";
+import { handleWaterRipple } from "./waterRipple";
 
 // ============================================================================
 // Types & Validation Helpers
 // ============================================================================
 
 type ViewMode = "login" | "register" | "forgot_email" | "forgot_otp" | "forgot_reset";
+
+const viewToHash: Record<ViewMode, string> = {
+  login: "#login",
+  register: "#register",
+  forgot_email: "#forgot-password",
+  forgot_otp: "#verify-otp",
+  forgot_reset: "#reset-password",
+};
+
+function hashToView(hash: string): ViewMode {
+  const clean = (hash || "").replace(/^#/, "").toLowerCase();
+  if (clean === "register") return "register";
+  if (clean === "forgot-password" || clean === "forgot_email" || clean === "forgot") return "forgot_email";
+  if (clean === "verify-otp" || clean === "forgot_otp" || clean === "otp") return "forgot_otp";
+  if (clean === "reset-password" || clean === "forgot_reset" || clean === "reset") return "forgot_reset";
+  return "login";
+}
 
 interface LoginFormValues {
   email: string;
@@ -66,38 +85,26 @@ function getPasswordStrength(password: string): { score: number; label: string }
 }
 
 // ============================================================================
-// Logo Badge with Glowing White Glass Box and Vibrant Halo Effect
+// Logo Badge with Glowing Box and Vibrant Halo Effect
 // ============================================================================
 
 export function LogoBadge() {
   return (
-    <div className="relative group/badge mb-4">
-      {/* Heavy blur vibrant halo effect */}
+    <div className="relative group/badge mb-5">
+      {/* Radiant ambient backlit glow behind badge for maximum standout visibility */}
       <div
-        className="absolute -inset-2 rounded-2xl bg-white/40 blur-xl opacity-80 group-hover/badge:opacity-100 group-hover/badge:blur-2xl transition-all duration-300 pointer-events-none"
+        className="absolute -inset-3 rounded-3xl bg-gradient-to-tr from-white/60 via-white/80 to-pink-200/50 blur-xl opacity-90 group-hover/badge:opacity-100 group-hover/badge:blur-2xl transition-all duration-300 pointer-events-none"
         aria-hidden="true"
       />
-      {/* Small, glowing white glass box with heavy blur */}
+      {/* Hero logo badge with enlarged size, pure white backdrop, and sharp presence */}
       <div
-        className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-white/15 backdrop-blur-2xl border border-white/30 flex items-center justify-center p-3 transition-transform duration-200 group-hover/badge:scale-105"
-        style={{
-          boxShadow: "0 0 25px rgba(255, 255, 255, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.4)",
-        }}
+        className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-3xl bg-white border-2 border-white flex items-center justify-center p-1.5 transition-transform duration-200 group-hover/badge:scale-105 shadow-[0_12px_32px_rgba(0,0,0,0.6),0_0_25px_rgba(255,255,255,0.55)] overflow-hidden"
       >
-        <svg
-          className="w-8 h-8 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-          />
-        </svg>
+        <img
+          src={webLogo}
+          alt="Teacher Portal Logo"
+          className="w-full h-full object-contain rounded-2xl select-none"
+        />
       </div>
     </div>
   );
@@ -125,15 +132,16 @@ function AcademicBackground() {
 // ============================================================================
 
 export default function App() {
-  // Navigation State
+  // Navigation State initialized from URL hash
   const [view, setView] = useState<ViewMode>(() => {
     if (typeof window !== "undefined") {
-      const hash = window.location.hash;
-      if (hash === "#register") return "register";
-      if (hash === "#forgot-password") return "forgot_email";
+      return hashToView(window.location.hash);
     }
     return "login";
   });
+
+  // Login welcome/notification banner message
+  const [loginNotice, setLoginNotice] = useState<string | undefined>();
 
   // Database of Registered Teachers (Loaded from persistent database with itssrehann2324@gmail.com)
   const [teacherDatabase, setTeacherDatabase] = useState<string[]>(() =>
@@ -150,37 +158,69 @@ export default function App() {
     });
   }, []);
 
-  // Sync with window.location.hash
-  useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash;
-      if (hash === "#register") setView("register");
-      else if (hash === "#forgot-password") setView("forgot_email");
-      else if (hash === "#login" || hash === "" || hash === "#") setView("login");
-    };
-    window.addEventListener("hashchange", handleHash);
-    return () => window.removeEventListener("hashchange", handleHash);
-  }, []);
-
-  // Update hash when view changes
+  // Browser Navigation History & Back/Forward Support (including Android back button)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const targetHash =
-      view === "register"
-        ? "#register"
-        : view === "forgot_email"
-        ? "#forgot-password"
-        : "#login";
-    if (window.location.hash !== targetHash) {
-      window.history.replaceState(null, "", targetHash);
-    }
-  }, [view]);
 
-  const navigateTo = (newView: ViewMode) => {
-    setView(newView);
+    // Normalize initial entry in browser history without creating a duplicate entry
+    const initialHash = window.location.hash;
+    const initialView = hashToView(initialHash);
+    const expectedHash = viewToHash[initialView];
+
+    if (!initialHash || initialHash === "#" || initialHash === "") {
+      window.history.replaceState({ view: initialView }, "", expectedHash);
+    } else if (!window.history.state || window.history.state.view !== initialView) {
+      window.history.replaceState({ view: initialView }, "", initialHash);
+    }
+
+    // Handles browser Back, Forward, and Android Back button
+    const handlePopState = (e: PopStateEvent) => {
+      const targetView: ViewMode =
+        (e.state && e.state.view) || hashToView(window.location.hash);
+      setView(targetView);
+      if (targetView !== "login") {
+        setLoginNotice(undefined);
+      }
+    };
+
+    const handleHashChange = () => {
+      const targetView = hashToView(window.location.hash);
+      setView((prev) => {
+        if (prev !== targetView) {
+          if (targetView !== "login") {
+            setLoginNotice(undefined);
+          }
+          return targetView;
+        }
+        return prev;
+      });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
+
+  // Navigate to a new view and push to browser history
+  const navigateTo = (newView: ViewMode, replace = false) => {
     if (newView !== "login") {
       setLoginNotice(undefined);
     }
+    if (newView === view) return;
+
+    if (typeof window !== "undefined") {
+      const targetHash = viewToHash[newView];
+      if (replace) {
+        window.history.replaceState({ view: newView }, "", targetHash);
+      } else {
+        window.history.pushState({ view: newView }, "", targetHash);
+      }
+    }
+    setView(newView);
   };
 
   // Theme state: dark mode defaults to true for maximum backlit neon impact
@@ -215,7 +255,6 @@ export default function App() {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
-  const [loginNotice, setLoginNotice] = useState<string | undefined>();
 
   const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -407,7 +446,7 @@ export default function App() {
       }
 
       // Found in database! Transition to OTP view
-      setView("forgot_otp");
+      navigateTo("forgot_otp");
     } catch {
       setRecoverEmailError("Database verification failed. Please try again.");
     } finally {
@@ -475,33 +514,34 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-transparent px-4 py-8 sm:px-6 lg:px-8 font-sans antialiased text-zinc-900 dark:text-zinc-100 transition-colors selection:bg-fuchsia-500 selection:text-white">
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-transparent px-4 py-8 sm:px-6 lg:px-8 font-sans antialiased text-zinc-900 dark:text-zinc-100 transition-colors selection:bg-slate-400/40 selection:text-white">
       {/* Dark Academic Wallpaper & Glowing Neon Mathematical Formulas Layer */}
       <AcademicBackground />
 
-      {/* Theme Changing Button (Glass Pill) */}
+      {/* Theme Changing Button (Water Dewdrop Pill) */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
         <button
           type="button"
           onClick={() => setIsDark(!isDark)}
+          onMouseDown={handleWaterRipple}
           aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-          className="relative group flex items-center gap-2 px-4 py-2 rounded-full glass-input-box text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:text-fuchsia-600 dark:hover:text-fuchsia-300 shadow-lg cursor-pointer transition-all"
+          className="relative group flex items-center gap-2 px-4 py-2 rounded-full water-dewdrop-pill text-xs font-medium text-white shadow-lg cursor-pointer transition-all"
         >
           <div className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-          <span className="relative flex items-center gap-1.5">
+          <span className="relative z-20 flex items-center gap-1.5 text-white">
             {isDark ? (
               <>
-                <svg className="w-3.5 h-3.5 text-fuchsia-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
-                <span>Light</span>
+                <span className="text-white">Light</span>
               </>
             ) : (
               <>
-                <svg className="w-3.5 h-3.5 text-fuchsia-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                 </svg>
-                <span>Dark</span>
+                <span className="text-white">Dark</span>
               </>
             )}
           </span>
@@ -516,7 +556,7 @@ export default function App() {
           <main className="relative w-full login-card glass-panel glass-gradient-border glass-specular-top rounded-3xl p-7 sm:p-9 transition-all">
             <header className="flex flex-col items-center text-center mb-8">
               <LogoBadge />
-              <h1 className="text-2xl tracking-tight bright-heading">
+              <h1 className="text-[25px] sm:text-[27px] tracking-normal bright-heading">
                 Welcome back
               </h1>
             </header>
@@ -524,7 +564,7 @@ export default function App() {
             {loginNotice && (
               <div
                 role="status"
-                className="mb-6 p-4 rounded-xl bg-emerald-500/15 border border-emerald-400/60 text-emerald-200 text-sm flex items-center gap-2.5 shadow-sm backdrop-blur-md font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                className="mb-6 p-4 rounded-2xl water-dewdrop-pill border border-emerald-400/50 text-emerald-200 text-sm flex items-center gap-2.5 shadow-sm font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
                 <svg className="w-5 h-5 flex-shrink-0 text-emerald-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5z" clipRule="evenodd" />
@@ -536,7 +576,7 @@ export default function App() {
             {loginSuccess && (
               <div
                 role="status"
-                className="mb-6 p-4 rounded-xl bg-emerald-500/15 border border-emerald-400/60 text-emerald-200 text-sm flex items-center gap-2 backdrop-blur-md font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                className="mb-6 p-4 rounded-2xl water-dewdrop-pill border border-emerald-400/50 text-emerald-200 text-sm flex items-center gap-2 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
                 <svg className="w-5 h-5 flex-shrink-0 text-emerald-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5z" clipRule="evenodd" />
@@ -552,7 +592,7 @@ export default function App() {
             {loginErrors.general && (
               <div
                 role="alert"
-                className="mb-6 p-4 rounded-xl bg-red-500/15 border border-red-400/60 text-red-200 text-sm flex items-center gap-2 backdrop-blur-md font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                className="mb-6 p-4 rounded-2xl water-dewdrop-pill border border-red-400/50 text-red-200 text-sm flex items-center gap-2 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
                 <svg className="w-5 h-5 flex-shrink-0 text-red-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" clipRule="evenodd" />
@@ -573,10 +613,10 @@ export default function App() {
 
                 <div className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
+                    className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       loginErrors.email
-                        ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
+                        ? "bg-red-500/30 opacity-70"
+                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
                     }`}
                     aria-hidden="true"
                   />
@@ -593,7 +633,7 @@ export default function App() {
                       onChange={(e) => setLoginValues((prev) => ({ ...prev, email: e.target.value }))}
                       aria-invalid={Boolean(loginErrors.email)}
                       aria-describedby={loginErrors.email ? "email-error" : undefined}
-                      className={`w-full px-4 py-3 rounded-xl text-sm transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed ${
+                      className={`w-full px-5 py-3 rounded-full text-sm transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed ${
                         loginErrors.email
                           ? "!border-red-500 !text-red-200"
                           : ""
@@ -603,7 +643,7 @@ export default function App() {
                 </div>
 
                 {loginErrors.email && (
-                  <p id="email-error" role="alert" className="mt-1.5 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <p id="email-error" role="alert" className="mt-1.5 text-xs text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {loginErrors.email}
                   </p>
                 )}
@@ -620,10 +660,10 @@ export default function App() {
 
                 <div className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
+                    className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       loginErrors.password
-                        ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
+                        ? "bg-red-500/30 opacity-70"
+                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
                     }`}
                     aria-hidden="true"
                   />
@@ -640,7 +680,7 @@ export default function App() {
                       onChange={(e) => setLoginValues((prev) => ({ ...prev, password: e.target.value }))}
                       aria-invalid={Boolean(loginErrors.password)}
                       aria-describedby={loginErrors.password ? "password-error" : undefined}
-                      className={`w-full pl-4 pr-11 py-3 rounded-xl text-sm transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed ${
+                      className={`w-full pl-5 pr-12 py-3 rounded-full text-sm transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed ${
                         loginErrors.password
                           ? "!border-red-500 !text-red-200"
                           : ""
@@ -652,7 +692,7 @@ export default function App() {
                       onClick={() => setShowLoginPassword(!showLoginPassword)}
                       disabled={isLoginLoading}
                       aria-label={showLoginPassword ? "Hide password" : "Show password"}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-300 hover:text-fuchsia-400 transition-colors focus:outline-none focus:text-fuchsia-400"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-300 hover:text-slate-100 transition-colors focus:outline-none focus:text-white"
                     >
                       {showLoginPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -669,7 +709,7 @@ export default function App() {
                 </div>
 
                 {loginErrors.password && (
-                  <p id="password-error" role="alert" className="mt-1.5 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <p id="password-error" role="alert" className="mt-1.5 text-xs text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {loginErrors.password}
                   </p>
                 )}
@@ -704,26 +744,29 @@ export default function App() {
               {/* Submit Button Bar: "Access Teacher Portal" */}
               <div className="relative group pt-1">
                 <div
-                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
+                  className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                   aria-hidden="true"
                 />
 
                 <button
                   type="submit"
                   disabled={isLoginLoading}
-                  className="relative w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-white font-bold tracking-wide text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-pink-500/40 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer glass-button-glow glass-sheen"
+                  onMouseDown={handleWaterRipple}
+                  className="relative w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoginLoading ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      <span>Signing in to portal...</span>
-                    </>
-                  ) : (
-                    "Access Teacher Portal"
-                  )}
+                  <span className="relative z-20 flex items-center justify-center gap-2 text-white">
+                    {isLoginLoading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>Signing in to portal...</span>
+                      </>
+                    ) : (
+                      "Access Teacher Portal"
+                    )}
+                  </span>
                 </button>
               </div>
             </form>
@@ -751,7 +794,7 @@ export default function App() {
           <main className="relative w-full login-card glass-panel glass-gradient-border glass-specular-top rounded-3xl p-7 sm:p-9 transition-all">
             <header className="flex flex-col items-center text-center mb-7">
               <LogoBadge />
-              <h1 className="text-[25px] tracking-tight bright-heading">
+              <h1 className="text-[26px] sm:text-[28px] tracking-normal bright-heading">
                 Register
               </h1>
             </header>
@@ -759,7 +802,7 @@ export default function App() {
             {regErrors.general && (
               <div
                 role="alert"
-                className="mb-6 p-4 rounded-xl bg-red-500/15 border border-red-400/60 text-red-200 text-[15px] flex items-center gap-2 backdrop-blur-md font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                className="mb-6 p-4 rounded-2xl water-dewdrop-pill border border-red-400/50 text-red-200 text-[15px] flex items-center gap-2 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
                 <svg className="w-5 h-5 flex-shrink-0 text-red-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" clipRule="evenodd" />
@@ -780,10 +823,10 @@ export default function App() {
 
                 <div className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
+                    className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       regErrors.fullName
-                        ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
+                        ? "bg-red-500/30 opacity-70"
+                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
                     }`}
                     aria-hidden="true"
                   />
@@ -797,12 +840,12 @@ export default function App() {
                       disabled={isRegLoading}
                       value={regValues.fullName}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, fullName: e.target.value }))}
-                      className="w-full px-4 py-3 rounded-xl text-[15px] transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full px-5 py-3 rounded-full text-[15px] transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
                 {regErrors.fullName && (
-                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {regErrors.fullName}
                   </p>
                 )}
@@ -819,10 +862,10 @@ export default function App() {
 
                 <div className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
+                    className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       regErrors.institutionName
-                        ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
+                        ? "bg-red-500/30 opacity-70"
+                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
                     }`}
                     aria-hidden="true"
                   />
@@ -836,12 +879,12 @@ export default function App() {
                       disabled={isRegLoading}
                       value={regValues.institutionName}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, institutionName: e.target.value }))}
-                      className="w-full px-4 py-3 rounded-xl text-[15px] transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full px-5 py-3 rounded-full text-[15px] transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
                 {regErrors.institutionName && (
-                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {regErrors.institutionName}
                   </p>
                 )}
@@ -858,10 +901,10 @@ export default function App() {
 
                 <div className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
+                    className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       regErrors.email
-                        ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
+                        ? "bg-red-500/30 opacity-70"
+                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
                     }`}
                     aria-hidden="true"
                   />
@@ -875,12 +918,12 @@ export default function App() {
                       disabled={isRegLoading}
                       value={regValues.email}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-4 py-3 rounded-xl text-[15px] transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full px-5 py-3 rounded-full text-[15px] transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
                 {regErrors.email && (
-                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {regErrors.email}
                   </p>
                 )}
@@ -897,10 +940,10 @@ export default function App() {
 
                 <div className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
+                    className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       regErrors.password
-                        ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
+                        ? "bg-red-500/30 opacity-70"
+                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
                     }`}
                     aria-hidden="true"
                   />
@@ -914,7 +957,7 @@ export default function App() {
                       disabled={isRegLoading}
                       value={regValues.password}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, password: e.target.value }))}
-                      className="w-full pl-4 pr-11 py-3 rounded-xl text-[15px] transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full pl-5 pr-12 py-3 rounded-full text-[15px] transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -922,7 +965,7 @@ export default function App() {
                       onClick={() => setShowRegPassword(!showRegPassword)}
                       disabled={isRegLoading}
                       aria-label={showRegPassword ? "Hide password" : "Show password"}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-300 hover:text-fuchsia-400 transition-colors focus:outline-none focus:text-fuchsia-400"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-300 hover:text-slate-100 transition-colors focus:outline-none focus:text-white"
                     >
                       {showRegPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -942,7 +985,7 @@ export default function App() {
                   <div className="mt-2 space-y-1 transition-all">
                     <div className="flex items-center justify-between text-[13px]">
                       <span className="bright-body text-[13px]">Password strength</span>
-                      <span className="font-bold text-[#ff66c4] drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">
+                      <span className="font-semibold text-[#ff66c4] drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">
                         {regPasswordStrength.label}
                       </span>
                     </div>
@@ -961,7 +1004,7 @@ export default function App() {
                   </div>
                 )}
                 {regErrors.password && (
-                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {regErrors.password}
                   </p>
                 )}
@@ -978,10 +1021,10 @@ export default function App() {
 
                 <div className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
+                    className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       regErrors.confirmPassword
-                        ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
+                        ? "bg-red-500/30 opacity-70"
+                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
                     }`}
                     aria-hidden="true"
                   />
@@ -995,7 +1038,7 @@ export default function App() {
                       disabled={isRegLoading}
                       value={regValues.confirmPassword}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                      className="w-full pl-4 pr-11 py-3 rounded-xl text-[15px] transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full pl-5 pr-12 py-3 rounded-full text-[15px] transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -1003,7 +1046,7 @@ export default function App() {
                       onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
                       disabled={isRegLoading}
                       aria-label={showRegConfirmPassword ? "Hide password" : "Show password"}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-300 hover:text-fuchsia-400 transition-colors focus:outline-none focus:text-fuchsia-400"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-300 hover:text-slate-100 transition-colors focus:outline-none focus:text-white"
                     >
                       {showRegConfirmPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -1019,7 +1062,7 @@ export default function App() {
                   </div>
                 </div>
                 {regErrors.confirmPassword && (
-                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <p role="alert" className="mt-1.5 text-[13px] text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {regErrors.confirmPassword}
                   </p>
                 )}
@@ -1028,26 +1071,29 @@ export default function App() {
               {/* Submit Button Bar: "Register" */}
               <div className="relative group pt-3">
                 <div
-                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
+                  className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                   aria-hidden="true"
                 />
 
                 <button
                   type="submit"
                   disabled={isRegLoading}
-                  className="relative w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-white font-bold tracking-wide text-[15px] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-pink-500/40 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer glass-button-glow glass-sheen"
+                  onMouseDown={handleWaterRipple}
+                  className="relative w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[16px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isRegLoading ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      <span>Creating teacher account...</span>
-                    </>
-                  ) : (
-                    "Register"
-                  )}
+                  <span className="relative z-20 flex items-center justify-center gap-2 text-white">
+                    {isRegLoading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>Creating teacher account...</span>
+                      </>
+                    ) : (
+                      "Register"
+                    )}
+                  </span>
                 </button>
               </div>
             </form>
@@ -1074,7 +1120,7 @@ export default function App() {
           <main className="relative w-full login-card glass-panel glass-gradient-border glass-specular-top rounded-3xl p-7 sm:p-9 transition-all">
             <header className="flex flex-col items-center text-center mb-7">
               <LogoBadge />
-              <h1 className="text-2xl tracking-tight bright-heading">
+              <h1 className="text-[25px] sm:text-[27px] tracking-normal bright-heading">
                 Recover Your Portal
               </h1>
               <p className="mt-1.5 text-xs bright-body">
@@ -1094,10 +1140,10 @@ export default function App() {
 
                 <div className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
+                    className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       recoverEmailError
-                        ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
+                        ? "bg-red-500/30 opacity-70"
+                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
                     }`}
                     aria-hidden="true"
                   />
@@ -1115,13 +1161,13 @@ export default function App() {
                         setRecoverEmail(e.target.value);
                         if (recoverEmailError) setRecoverEmailError(undefined);
                       }}
-                      className="w-full px-4 py-3 rounded-xl text-sm transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full px-5 py-3 rounded-full text-sm transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
 
                 {recoverEmailError && (
-                  <p role="alert" className="mt-1.5 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <p role="alert" className="mt-1.5 text-xs text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {recoverEmailError}
                   </p>
                 )}
@@ -1130,26 +1176,29 @@ export default function App() {
               {/* Submit Button Bar */}
               <div className="relative group pt-1">
                 <div
-                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
+                  className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                   aria-hidden="true"
                 />
 
                 <button
                   type="submit"
                   disabled={isCheckingEmail}
-                  className="relative w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-white font-bold tracking-wide text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-pink-500/40 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer glass-button-glow glass-sheen"
+                  onMouseDown={handleWaterRipple}
+                  className="relative w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isCheckingEmail ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      <span>Checking database...</span>
-                    </>
-                  ) : (
-                    "Verify Account & Send OTP"
-                  )}
+                  <span className="relative z-20 flex items-center justify-center gap-2 text-white">
+                    {isCheckingEmail ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>Checking database...</span>
+                      </>
+                    ) : (
+                      "Verify Account & Send OTP"
+                    )}
+                  </span>
                 </button>
               </div>
             </form>
@@ -1176,7 +1225,7 @@ export default function App() {
           email={recoverEmail}
           renderLogo={() => <LogoBadge />}
           onSuccess={() => {
-            setView("forgot_reset");
+            navigateTo("forgot_reset");
             setNewPassword("");
             setConfirmNewPassword("");
             setResetErrors({});
@@ -1194,7 +1243,7 @@ export default function App() {
             <header className="flex flex-col items-center text-center mb-7">
               <LogoBadge />
               {/* Required Heading: "Welcome Back" */}
-              <h1 className="text-2xl tracking-tight bright-heading">
+              <h1 className="text-[25px] sm:text-[27px] tracking-normal bright-heading">
                 Welcome Back
               </h1>
               <p className="mt-1.5 text-xs bright-body">
@@ -1214,10 +1263,10 @@ export default function App() {
 
                 <div className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
+                    className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       resetErrors.password
-                        ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
+                        ? "bg-red-500/30 opacity-70"
+                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
                     }`}
                     aria-hidden="true"
                   />
@@ -1234,7 +1283,7 @@ export default function App() {
                         setNewPassword(e.target.value);
                         if (resetErrors.password) setResetErrors((prev) => ({ ...prev, password: undefined }));
                       }}
-                      className="w-full pl-4 pr-11 py-3 rounded-xl text-sm transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full pl-5 pr-12 py-3 rounded-full text-sm transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -1242,7 +1291,7 @@ export default function App() {
                       onClick={() => setShowNewPassword(!showNewPassword)}
                       disabled={isRecovering}
                       aria-label={showNewPassword ? "Hide password" : "Show password"}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-300 hover:text-fuchsia-400 transition-colors focus:outline-none focus:text-fuchsia-400"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-300 hover:text-slate-100 transition-colors focus:outline-none focus:text-white"
                     >
                       {showNewPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1262,7 +1311,7 @@ export default function App() {
                   <div className="mt-2 space-y-1 transition-all">
                     <div className="flex items-center justify-between text-xs">
                       <span className="bright-body text-xs">Password strength</span>
-                      <span className="font-bold text-[#ff66c4] drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">
+                      <span className="font-semibold text-[#ff66c4] drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">
                         {newPasswordStrength.label}
                       </span>
                     </div>
@@ -1282,7 +1331,7 @@ export default function App() {
                 )}
 
                 {resetErrors.password && (
-                  <p role="alert" className="mt-1.5 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <p role="alert" className="mt-1.5 text-xs text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {resetErrors.password}
                   </p>
                 )}
@@ -1299,10 +1348,10 @@ export default function App() {
 
                 <div className="relative group">
                   <div
-                    className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 blur-md transition-all duration-300 pointer-events-none ${
+                    className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       resetErrors.confirm
-                        ? "from-red-500 to-rose-600 opacity-60 blur-md"
-                        : "opacity-25 group-hover:opacity-60 group-focus-within:opacity-90 group-focus-within:blur-lg"
+                        ? "bg-red-500/30 opacity-70"
+                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
                     }`}
                     aria-hidden="true"
                   />
@@ -1319,7 +1368,7 @@ export default function App() {
                         setConfirmNewPassword(e.target.value);
                         if (resetErrors.confirm) setResetErrors((prev) => ({ ...prev, confirm: undefined }));
                       }}
-                      className="w-full pl-4 pr-11 py-3 rounded-xl text-sm transition-all outline-none glass-input-box text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full pl-5 pr-12 py-3 rounded-full text-sm transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -1327,7 +1376,7 @@ export default function App() {
                       onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
                       disabled={isRecovering}
                       aria-label={showConfirmNewPassword ? "Hide password" : "Show password"}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-300 hover:text-fuchsia-400 transition-colors focus:outline-none focus:text-fuchsia-400"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-300 hover:text-slate-100 transition-colors focus:outline-none focus:text-white"
                     >
                       {showConfirmNewPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1344,7 +1393,7 @@ export default function App() {
                 </div>
 
                 {resetErrors.confirm && (
-                  <p role="alert" className="mt-1.5 text-xs text-red-400 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  <p role="alert" className="mt-1.5 text-xs text-red-400 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                     {resetErrors.confirm}
                   </p>
                 )}
@@ -1353,26 +1402,29 @@ export default function App() {
               {/* Action Button at Bottom Middle: "Recover" */}
               <div className="relative group pt-2">
                 <div
-                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-300 pointer-events-none"
+                  className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                   aria-hidden="true"
                 />
 
                 <button
                   type="submit"
                   disabled={isRecovering}
-                  className="relative w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-white font-bold tracking-wide text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-pink-500/40 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer glass-button-glow glass-sheen"
+                  onMouseDown={handleWaterRipple}
+                  className="relative w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isRecovering ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      <span>Recovering password...</span>
-                    </>
-                  ) : (
-                    "Recover"
-                  )}
+                  <span className="relative z-20 flex items-center justify-center gap-2 text-white">
+                    {isRecovering ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>Recovering password...</span>
+                      </>
+                    ) : (
+                      "Recover"
+                    )}
+                  </span>
                 </button>
               </div>
             </form>

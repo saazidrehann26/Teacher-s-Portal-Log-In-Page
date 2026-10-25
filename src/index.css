@@ -2,6 +2,26 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+/* ============================================================================ */
+/* Custom Fonts: Bell MT Font Definitions                                       */
+/* ============================================================================ */
+
+@font-face {
+  font-family: "Bell MT";
+  src: url("/fonts/bell-mt.ttf") format("truetype");
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bell MT";
+  src: url("/fonts/bell-mt-bold.ttf") format("truetype");
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Staggered Dot Wave: Each dot blinks at its own individual time */
 @keyframes staggeredDotBlink {
   0%, 100% {
@@ -59,21 +79,25 @@
 }
 
 /* ============================================================================ */
-/* Advanced Glassmorphism (Frosted Glass) Styles & Specular Highlights          */
+/* Water Dewdrop Frosted Glass Styles & Specular Highlights for All Boxes       */
 /* ============================================================================ */
 
 /* Main Frosted Glass Card Container (.login-card, .glass-panel) */
 .login-card,
 .glass-panel {
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  background: rgba(14, 10, 24, 0.18);
-  border: 1px solid rgba(236, 72, 153, 0.28);
-  border-radius: 20px;
+  backdrop-filter: blur(12px) saturate(190%);
+  -webkit-backdrop-filter: blur(12px) saturate(190%);
+  background:
+    radial-gradient(ellipse 90% 45% at 50% 0%, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.05) 50%, transparent 80%),
+    rgba(18, 12, 28, 0.28);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 24px;
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.6),
-    0 0 24px rgba(236, 72, 153, 0.08),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.25),
+    0 16px 45px rgba(0, 0, 0, 0.65),
+    0 0 25px rgba(217, 70, 239, 0.15);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Translucent Glowing Gradient Border */
@@ -85,8 +109,8 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(236, 72, 153, 0.35), rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.15));
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(217, 70, 239, 0.3), rgba(255, 255, 255, 0.2));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -104,39 +128,73 @@
   top: 0;
   left: 2rem;
   right: 2rem;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
   pointer-events: none;
   z-index: 2;
 }
 
-/* Input Fields (E-mail & Password) with Refracting Glare */
+/* Input Fields (E-mail, Password, Name, etc.) with Two-Tone 45° Split (Light Ash Left / Black Right, Clean Transition) */
 .glass-input-box {
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  background: linear-gradient(115deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, transparent 50%), rgba(16, 12, 28, 0.14);
-  border: 1.5px solid rgba(255, 255, 255, 0.22);
-  border-radius: 12px;
+  backdrop-filter: blur(14px) saturate(190%);
+  -webkit-backdrop-filter: blur(14px) saturate(190%);
+  background:
+    /* Two-tone split: Light Ash on Left, seamlessly meeting Deep Black on Right at 45° (no divider) */
+    linear-gradient(
+      135deg,
+      rgba(226, 232, 240, 0.22) 0%,
+      rgba(241, 245, 249, 0.16) calc(50% - 1px),
+      rgba(0, 0, 0, 0.58) calc(50% + 1px),
+      rgba(5, 5, 10, 0.72) 100%
+    );
+  border: 1.5px solid rgba(226, 232, 240, 0.35);
+  border-radius: 9999px !important;
   color: #ffffff;
-  font-weight: 600;
+  font-weight: 500;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
   box-shadow:
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 2px 4px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.35),
+    0 4px 16px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .glass-input-box::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.glass-input-box:hover {
+  border-color: rgba(241, 245, 249, 0.55);
+  box-shadow:
+    inset 0 2px 3px 0 rgba(255, 255, 255, 0.85),
+    0 4px 16px rgba(203, 213, 225, 0.25);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(226, 232, 240, 0.26) 0%,
+      rgba(241, 245, 249, 0.19) calc(50% - 1px),
+      rgba(0, 0, 0, 0.62) calc(50% + 1px),
+      rgba(5, 5, 10, 0.78) 100%
+    );
 }
 
 .glass-input-box:focus,
 .glass-input-box:focus-within {
-  border-color: rgba(236, 72, 153, 0.7);
-  background: linear-gradient(115deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 50%), rgba(255, 255, 255, 0.08);
+  border-color: rgba(248, 250, 252, 0.75);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(226, 232, 240, 0.30) 0%,
+      rgba(241, 245, 249, 0.22) calc(50% - 1px),
+      rgba(0, 0, 0, 0.65) calc(50% + 1px),
+      rgba(5, 5, 10, 0.82) 100%
+    );
+  /* Light, delicate ash glow when user clicks to enter credentials */
   box-shadow:
-    0 0 18px -2px rgba(236, 72, 153, 0.55),
-    inset 0 1px 2px rgba(255, 255, 255, 0.2);
+    inset 0 2px 3px 0 rgba(255, 255, 255, 0.95),
+    0 0 16px rgba(226, 232, 240, 0.35),
+    0 0 4px rgba(203, 213, 225, 0.45),
+    0 4px 14px rgba(0, 0, 0, 0.3);
   outline: none;
 }
 
@@ -145,27 +203,29 @@
 /* ============================================================================ */
 
 .bright-heading {
+  font-family: "Bell MT", "Bell", Georgia, "Times New Roman", serif !important;
   color: #ffffff !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 14px rgba(255, 255, 255, 0.5);
 }
 
 .bright-label {
   color: #ffffff !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.025em;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 10px rgba(255, 255, 255, 0.45);
 }
 
 .bright-body {
   color: #ffffff !important;
-  font-weight: 600 !important;
+  font-weight: 400 !important;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 8px rgba(255, 255, 255, 0.35);
 }
 
 .bright-link {
   color: #ff52b7 !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 12px rgba(255, 82, 183, 0.9);
   transition: all 0.2s ease;
 }
@@ -175,17 +235,22 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 18px rgba(255, 161, 221, 1);
 }
 
-/* Glassmorphic Checkbox with Tiny Check */
+/* Dewdrop Frosted Glass Checkbox */
 .glass-checkbox {
   appearance: none;
   -webkit-appearance: none;
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1.15rem;
+  height: 1.15rem;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.08) 50%, transparent 80%),
+    rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.8),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px) saturate(190%);
+  -webkit-backdrop-filter: blur(12px) saturate(190%);
   cursor: pointer;
   display: inline-grid;
   place-content: center;
@@ -194,14 +259,18 @@
 }
 
 .glass-checkbox:hover {
-  border-color: rgba(236, 72, 153, 0.6);
-  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
+    0 4px 12px rgba(203, 213, 225, 0.35);
 }
 
 .glass-checkbox:checked {
   background: linear-gradient(135deg, #ec4899, #db2777);
-  border-color: rgba(236, 72, 153, 0.8);
-  box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+  border-color: rgba(255, 255, 255, 0.65);
+  box-shadow:
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.6),
+    0 0 12px rgba(236, 72, 153, 0.6);
 }
 
 .glass-checkbox::before {
@@ -219,49 +288,107 @@
   transform: scale(1);
 }
 
-/* CTA Button ("Access Teacher Portal") */
+/* ============================================================================ */
+/* Water Dewdrop Frosted Pill (Unified Button Style for All Controls)           */
+/* ============================================================================ */
+
+.water-dewdrop-pill,
+.btn-magenta-backlit,
+.water-button,
 .glass-button-glow {
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: linear-gradient(90deg, #b00c87 0%, #d10a43 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  isolation: isolate;
+  backdrop-filter: blur(12px) saturate(190%);
+  -webkit-backdrop-filter: blur(12px) saturate(190%);
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.08) 50%, transparent 80%),
+    rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
   box-shadow:
-    0 0 15px rgba(209, 10, 67, 0.5),
-    inset 0 1px 2px rgba(255, 255, 255, 0.4);
-  color: #ffffff;
-  font-weight: 600;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.25),
+    0 4px 16px rgba(0, 0, 0, 0.35);
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.6);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  user-select: none;
 }
 
+.water-dewdrop-pill:hover,
+.btn-magenta-backlit:hover,
+.water-button:hover,
 .glass-button-glow:hover {
-  background: linear-gradient(90deg, #c01495 0%, #e01750 100%);
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.6);
+  transform: translateY(-1.5px) scale(1.015);
+  border-color: rgba(255, 255, 255, 0.55);
   box-shadow:
-    0 0 22px rgba(209, 10, 67, 0.7),
-    inset 0 1px 2px rgba(255, 255, 255, 0.5);
-  transform: translateY(-1px);
+    inset 0 2px 3px 0 rgba(255, 255, 255, 0.95),
+    0 6px 20px rgba(217, 70, 239, 0.4);
 }
 
+.water-dewdrop-pill:active,
+.btn-magenta-backlit:active,
+.water-button:active,
 .glass-button-glow:active {
-  transform: translateY(0.5px);
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.6);
+  transform: translateY(1.5px) scale(0.985);
   box-shadow:
-    0 0 10px rgba(209, 10, 67, 0.4),
-    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 2px 5px 0 rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: all 0.08s ease-out;
 }
 
-/* Upper Gloss Sheen on Button */
-.glass-sheen::after {
-  content: "";
+.water-dewdrop-pill span,
+.water-dewdrop-pill svg,
+.water-dewdrop-pill p {
+  color: #ffffff !important;
+}
+
+.water-dewdrop-pill:disabled,
+.btn-magenta-backlit:disabled,
+.water-button:disabled,
+.glass-button-glow:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Water Ripple Wave expanding from click point (retained for dewdrop pills) */
+.water-drop-ripple {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent 50%);
-  border-radius: inherit;
+  border-radius: 50%;
   pointer-events: none;
+  z-index: 1; /* Retained behind text so text never disappears on click */
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.15) 30%,
+    rgba(240, 171, 252, 0.1) 50%,
+    transparent 70%
+  );
+  box-shadow:
+    0 0 12px rgba(255, 255, 255, 0.35);
+  transform: scale(0);
+  animation: waterRippleWaveOut 0.7s cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes waterRippleWaveOut {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  65% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
 }
 
 /* Subtle Neon Formula Floating Animation */
