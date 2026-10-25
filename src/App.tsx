@@ -3,7 +3,7 @@ import {
   useEffect,
   type FormEvent,
 } from "react";
-import academicBg from "./assets/academic-bg.jpg";
+import academicBg from "./assets/Gemini_Generated_Image_v5lj6qv5lj6qv5lj.jpg";
 import {
   getDatabaseUsers,
   isEmailRegisteredInDatabase,

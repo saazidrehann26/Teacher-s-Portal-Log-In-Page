@@ -65,8 +65,8 @@
 /* Main Frosted Glass Card Container (.login-card, .glass-panel) */
 .login-card,
 .glass-panel {
-  backdrop-filter: blur(1.5px);
-  -webkit-backdrop-filter: blur(1.5px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   background: rgba(14, 10, 24, 0.18);
   border: 1px solid rgba(236, 72, 153, 0.28);
   border-radius: 20px;
@@ -112,8 +112,8 @@
 
 /* Input Fields (E-mail & Password) with Refracting Glare */
 .glass-input-box {
-  backdrop-filter: blur(1px);
-  -webkit-backdrop-filter: blur(1px);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   background: linear-gradient(115deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, transparent 50%), rgba(16, 12, 28, 0.14);
   border: 1.5px solid rgba(255, 255, 255, 0.22);
   border-radius: 12px;
