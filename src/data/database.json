@@ -2,6 +2,76 @@
   "description": "Teacher Portal User Database",
   "users": [
     {
+      "id": "usr_1793032974591",
+      "fullName": "user2",
+      "email": "fewol82229@agaexpress.com",
+      "institutionName": "Ahsanullah University of Science & Technology",
+      "password": "user",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-26T16:42:54.591Z"
+    },
+    {
+      "id": "usr_1793030452624",
+      "fullName": "user",
+      "email": "lowef19644@agaexpress.com",
+      "institutionName": "Ahsanullah University of Science & Technology",
+      "password": "itistest",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-26T16:00:52.624Z"
+    },
+    {
+      "id": "usr_1793030368409",
+      "fullName": "user",
+      "email": "conax67206@agaexpress.com",
+      "institutionName": "Ahsanullah University of Science & Technology",
+      "password": "thisistest",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-26T15:59:28.409Z"
+    },
+    {
+      "id": "usr_1793019622892",
+      "fullName": "test",
+      "email": "miwet26734@37xiao.com",
+      "institutionName": "Ahsanullah University of Science & Technology",
+      "password": "test1",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-26T13:00:22.892Z"
+    },
+    {
+      "id": "usr_1793015736948",
+      "fullName": "User",
+      "email": "photosandfilesbackup2024@gmail.com",
+      "institutionName": "Ahsanullah University of Science & Technology",
+      "password": "useri",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-26T11:55:36.948Z"
+    },
+    {
+      "id": "usr_1792999994789",
+      "fullName": "Elon Musk",
+      "email": "sazidrehan1@gmail.com",
+      "institutionName": "Ahsanullah University of Science & Technology",
+      "password": "user1234",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-26T07:33:14.789Z"
+    },
+    {
+      "id": "usr_1792998849228",
+      "fullName": "Badhan",
+      "email": "pfahad565@gmail.com",
+      "institutionName": "Ahsanullah University of Science & Technology",
+      "password": "newpagetest",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-26T07:14:09.228Z"
+    },
+    {
       "id": "usr_1792851886224",
       "fullName": "Ahnaf",
       "email": "abcdef@gmail.com",
@@ -46,7 +116,7 @@
       "fullName": "Sazid Rehan",
       "email": "sazid.cse.00725205101061@aust.edu",
       "institutionName": "Ahsanullah University of Science & Technology",
-      "password": "sazidwebsite",
+      "password": "user",
       "role": "Educator",
       "status": "active",
       "createdAt": "2026-10-24T11:07:40.333Z"
@@ -90,36 +160,6 @@
       "role": "Educator",
       "status": "active",
       "createdAt": "2026-10-23T15:46:54.607Z"
-    },
-    {
-      "id": "usr_001",
-      "fullName": "Rehann",
-      "email": "itssrehann2324@gmail.com",
-      "institutionName": "Ahsanullah University of Science and Technology",
-      "password": "myportal23",
-      "role": "Educator",
-      "status": "active",
-      "createdAt": "2026-10-23T01:34:00Z"
-    },
-    {
-      "id": "usr_002",
-      "fullName": "Dr. Jane Doe",
-      "email": "teacher@school.edu",
-      "institutionName": "Springfield High School",
-      "password": "password123",
-      "role": "Senior Educator",
-      "status": "active",
-      "createdAt": "2026-10-20T10:00:00Z"
-    },
-    {
-      "id": "usr_003",
-      "fullName": "Admin Officer",
-      "email": "admin@school.edu",
-      "institutionName": "School District 4",
-      "password": "admin123",
-      "role": "Administrator",
-      "status": "active",
-      "createdAt": "2026-10-20T10:00:00Z"
     }
   ]
 }

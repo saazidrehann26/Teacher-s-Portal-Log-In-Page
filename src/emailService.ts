@@ -17,8 +17,8 @@ const OTP_STORAGE_KEY = "teacher_portal_active_otp";
 // EmailJS Configuration from User Credentials
 export const DEFAULT_EMAILJS_CONFIG = {
   publicKey: "ME2eguiVl69ksPgzH",
-  serviceId: "teacherportal",
-  templateId: "template_83ex1qp",
+  serviceId: "resetpass",
+  templateId: "template_qxrxwsn",
 };
 
 export function getEmailJsConfig() {
@@ -27,8 +27,15 @@ export function getEmailJsConfig() {
       const stored = localStorage.getItem("teacher_portal_emailjs_config");
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.templateId === "95gkdpv") {
-          parsed.templateId = "template_83ex1qp";
+        if (
+          parsed.templateId === "95gkdpv" ||
+          parsed.templateId === "template_83ex1qp" ||
+          parsed.serviceId === "otp_verify" ||
+          parsed.serviceId === "teacherportal"
+        ) {
+          parsed.templateId = "template_qxrxwsn";
+          parsed.serviceId = "resetpass";
+          parsed.publicKey = "ME2eguiVl69ksPgzH";
           localStorage.setItem("teacher_portal_emailjs_config", JSON.stringify(parsed));
         }
         return { ...DEFAULT_EMAILJS_CONFIG, ...parsed };
@@ -108,12 +115,17 @@ export async function sendOtpToEmail(email: string): Promise<{
   }
 
   const cfg = getEmailJsConfig();
-  const templateList = [
-    cfg.templateId,
-    cfg.templateId.startsWith("template_")
-      ? cfg.templateId.replace(/^template_/, "")
-      : `template_${cfg.templateId}`,
-  ].filter(Boolean);
+  const templateList = Array.from(
+    new Set([
+      cfg.templateId,
+      "template_qxrxwsn",
+      "emplate_qxrxwsn",
+      "qxrxwsn",
+      cfg.templateId.startsWith("template_")
+        ? cfg.templateId.replace(/^template_/, "")
+        : `template_${cfg.templateId}`,
+    ])
+  ).filter(Boolean);
 
   let lastEmailJsError = "";
 

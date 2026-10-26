@@ -1,6 +1,6 @@
 // ============================================================================
 // Teacher Portal Database Service
-// Persistently stores teacher accounts with initial seed including itssrehann2324@gmail.com
+// Persistently stores teacher accounts
 // Syncs with browser localStorage and the project database file via Vite API
 // ============================================================================
 
@@ -15,41 +15,10 @@ export interface TeacherUser {
   createdAt?: string;
 }
 
-const STORAGE_KEY = "teacher_portal_database_v2";
+const STORAGE_KEY = "teacher_portal_database_v3";
 
-// Initial seed database with itssrehann2324@gmail.com saved
-export const INITIAL_DATABASE: TeacherUser[] = [
-  {
-    id: "usr_001",
-    fullName: "Rehan",
-    email: "itssrehann2324@gmail.com",
-    institutionName: "Ahsanullah University of Science and Technology",
-    password: "password123",
-    role: "Educator",
-    status: "active",
-    createdAt: "2026-10-23T01:34:00Z",
-  },
-  {
-    id: "usr_002",
-    fullName: "Dr. Jane Doe",
-    email: "teacher@school.edu",
-    institutionName: "Springfield High School",
-    password: "password123",
-    role: "Senior Educator",
-    status: "active",
-    createdAt: "2026-10-20T10:00:00Z",
-  },
-  {
-    id: "usr_003",
-    fullName: "Admin Officer",
-    email: "admin@school.edu",
-    institutionName: "School District 4",
-    password: "admin123",
-    role: "Administrator",
-    status: "active",
-    createdAt: "2026-10-20T10:00:00Z",
-  },
-];
+// Initial seed database
+export const INITIAL_DATABASE: TeacherUser[] = [];
 
 /**
  * Returns all saved teacher users from persistent storage.
@@ -57,19 +26,15 @@ export const INITIAL_DATABASE: TeacherUser[] = [
 export function getDatabaseUsers(): TeacherUser[] {
   if (typeof window === "undefined") return INITIAL_DATABASE;
   try {
+    // Clean up older legacy storage if present
+    localStorage.removeItem("teacher_portal_database_v2");
+
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DATABASE));
       return INITIAL_DATABASE;
     }
-    const parsed = JSON.parse(raw) as TeacherUser[];
-
-    // Ensure itssrehann2324@gmail.com is always guaranteed in the database
-    if (!parsed.some((u) => u.email.toLowerCase() === "itssrehann2324@gmail.com")) {
-      parsed.unshift(INITIAL_DATABASE[0]);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-    }
-    return parsed;
+    return JSON.parse(raw) as TeacherUser[];
   } catch {
     return INITIAL_DATABASE;
   }
@@ -228,11 +193,12 @@ export async function syncDatabaseWithServer(): Promise<TeacherUser[]> {
     const res = await fetch("/api/database");
     if (!res.ok) return getDatabaseUsers();
     const data = await res.json();
-    if (data && Array.isArray(data.users) && data.users.length > 0) {
+    if (data && Array.isArray(data.users)) {
+      const serverUsers = data.users;
       const localUsers = getDatabaseUsers();
       // Merge: server users + any local users not on server
       const mergedMap = new Map<string, TeacherUser>();
-      for (const u of data.users) {
+      for (const u of serverUsers) {
         if (u.email) mergedMap.set(u.email.toLowerCase(), u);
       }
       for (const u of localUsers) {

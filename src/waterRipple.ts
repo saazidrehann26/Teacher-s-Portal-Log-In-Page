@@ -13,6 +13,8 @@ export function handleWaterRipple(e: React.MouseEvent<HTMLButtonElement>) {
 
   const ripple = document.createElement("span");
   ripple.className = "water-drop-ripple";
+  ripple.style.position = "absolute";
+  ripple.style.pointerEvents = "none";
   ripple.style.width = `${size}px`;
   ripple.style.height = `${size}px`;
   ripple.style.left = `${x}px`;

@@ -1,6 +1,8 @@
 import {
   useState,
   useEffect,
+  useCallback,
+  useRef,
   type FormEvent,
   type KeyboardEvent,
   type ClipboardEvent,
@@ -13,11 +15,21 @@ export interface OtpVerificationProps {
   onSuccess: () => void;
   onCancel: () => void;
   renderLogo?: () => React.ReactNode;
+  title?: string;
+  subtitle?: string;
+  showStaggeredDots?: boolean;
+  purpose?: "register" | "forgot";
 }
 
 // EmailJS Credentials
-const EMAILJS_SERVICE_ID = "teacherportal";
-const EMAILJS_TEMPLATE_ID = "template_83ex1qp";
+// For user verification (Registration)
+const USER_VERIFICATION_SERVICE_ID = "userverification";
+const USER_VERIFICATION_TEMPLATE_ID = "template_67pjeib";
+
+// For password recovery (Forgot Password)
+const RESET_PASS_SERVICE_ID = "resetpass";
+const RESET_PASS_TEMPLATE_ID = "template_qxrxwsn";
+
 const EMAILJS_PUBLIC_KEY = "ME2eguiVl69ksPgzH";
 
 // Module-level locks and promise cache to strictly prevent duplicate dispatches across React StrictMode / remounts
@@ -30,8 +42,20 @@ export default function OtpVerification({
   onSuccess,
   onCancel,
   renderLogo,
+  title = "Please Wait",
+  subtitle = "Check your email and put down the OTP",
+  showStaggeredDots,
+  purpose = "forgot",
 }: OtpVerificationProps) {
+  const isUnmountedRef = useRef(false);
+  useEffect(() => {
+    return () => {
+      isUnmountedRef.current = true;
+    };
+  }, []);
+
   const cleanEmail = email.trim().toLowerCase();
+  const shouldShowDots = showStaggeredDots !== undefined ? showStaggeredDots : title === "Please Wait";
 
   // 5-minute timer (300 seconds)
   const [timerSeconds, setTimerSeconds] = useState(300);
@@ -66,7 +90,7 @@ export default function OtpVerification({
   };
 
   // Helper function to handle EmailJS sending (enforcing strictly 1 email per request)
-  const sendVerificationEmail = async (targetEmail: string, force = false): Promise<string> => {
+  const sendVerificationEmail = useCallback(async (targetEmail: string, force = false): Promise<string> => {
     const target = targetEmail.trim().toLowerCase();
     const now = Date.now();
 
@@ -91,6 +115,7 @@ export default function OtpVerification({
     }
 
     const newOtp = generate5DigitOTP();
+    console.log(`[Teacher Portal Verification] 5-Digit OTP for ${target}:`, newOtp);
 
     // Save session to sessionStorage for recovery flow
     if (typeof window !== "undefined") {
@@ -107,6 +132,16 @@ export default function OtpVerification({
       } catch {}
     }
 
+    const isRegister = purpose === "register";
+    const serviceId = isRegister ? USER_VERIFICATION_SERVICE_ID : RESET_PASS_SERVICE_ID;
+    const templateCandidates = isRegister
+      ? [USER_VERIFICATION_TEMPLATE_ID, "67pjeib"]
+      : [RESET_PASS_TEMPLATE_ID, "emplate_qxrxwsn", "qxrxwsn"];
+
+    const messageBody = isRegister
+      ? `Your Teacher Portal email verification code is: ${newOtp}. It is valid for 5 minutes.`
+      : `Your Teacher Portal password recovery verification code is: ${newOtp}. It is valid for 5 minutes.`;
+
     const templateParams = {
       to_email: target,
       email: target,
@@ -119,19 +154,35 @@ export default function OtpVerification({
       code: newOtp,
       verification_code: newOtp,
       passcode: newOtp,
-      message: `Your Teacher Portal password recovery verification code is: ${newOtp}. It is valid for 5 minutes.`,
+      message: messageBody,
     };
 
-    await emailjs.send(
-      EMAILJS_SERVICE_ID,
-      EMAILJS_TEMPLATE_ID,
-      templateParams,
-      EMAILJS_PUBLIC_KEY
-    );
+    let sent = false;
+    let lastError: unknown = null;
+
+    for (const tId of templateCandidates) {
+      try {
+        await emailjs.send(
+          serviceId,
+          tId,
+          templateParams,
+          EMAILJS_PUBLIC_KEY
+        );
+        sent = true;
+        break;
+      } catch (err) {
+        lastError = err;
+        console.warn(`EmailJS dispatch attempt with template ${tId} on service ${serviceId} failed:`, err);
+      }
+    }
+
+    if (!sent && lastError) {
+      throw lastError;
+    }
 
     lastSentTimestamps.set(target, { code: newOtp, timestamp: now });
     return newOtp;
-  };
+  }, [purpose]);
 
   // Send initial OTP email when component mounts (guaranteed strictly 1 email and instant UI success notification)
   useEffect(() => {
@@ -172,7 +223,7 @@ export default function OtpVerification({
     return () => {
       isMounted = false;
     };
-  }, [email]);
+  }, [email, sendVerificationEmail]);
 
   // 5-minute countdown timer
   useEffect(() => {
@@ -314,15 +365,19 @@ export default function OtpVerification({
       }
 
       if (isValid) {
-        // Validated successfully! Advance to new password screen
+        // Validated successfully! Advance view
         onSuccess();
       } else {
         setOtpError("Invalid verification code. Please check your email and try again.");
       }
     } catch {
-      setOtpError("Verification failed. Please try again.");
+      if (!isUnmountedRef.current) {
+        setOtpError("Verification failed. Please try again.");
+      }
     } finally {
-      setIsVerifying(false);
+      if (!isUnmountedRef.current) {
+        setIsVerifying(false);
+      }
     }
   };
 
@@ -332,29 +387,31 @@ export default function OtpVerification({
         <header className="flex flex-col items-center text-center mb-6">
           {renderLogo ? renderLogo() : null}
 
-          {/* Heading: "Please Wait....." with each dot blinking at different time (5 dots) */}
+          {/* Heading: either "Verify your email" or "Please Wait....." */}
           <h1 className="text-[25px] sm:text-[27px] tracking-normal bright-heading flex items-center justify-center">
-            <span>Please Wait</span>
-            <span className="inline-flex items-center ml-1 text-fuchsia-400 font-mono text-[25px] sm:text-[27px] font-bold select-none drop-shadow-[0_0_8px_rgba(217,70,239,0.9)]" aria-hidden="true">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <span
-                  key={i}
-                  className="staggered-dot inline-block"
-                  style={{ animationDelay: `${i * 150}ms` }}
-                >
-                  .
-                </span>
-              ))}
-            </span>
+            <span>{title}</span>
+            {shouldShowDots && (
+              <span className="inline-flex items-center ml-1 text-[#daaceb] font-mono text-[25px] sm:text-[27px] font-bold select-none drop-shadow-[0_0_8px_rgba(218,172,235,0.9)]" aria-hidden="true">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <span
+                    key={i}
+                    className="staggered-dot inline-block"
+                    style={{ animationDelay: `${i * 150}ms` }}
+                  >
+                    .
+                  </span>
+                ))}
+              </span>
+            )}
           </h1>
 
-          {/* Required instruction: "Check your email and put down the OTP" */}
+          {/* Subtitle / instruction */}
           <p className="mt-2 text-xs bright-body">
-            Check your email and put down the OTP
+            {subtitle}
           </p>
 
           <p className="text-[11px] bright-body mt-0.5">
-            Sent to: <span className="text-[#ff66c4] font-semibold drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">{email}</span>
+            Sent to: <span className="text-[#daaceb] font-semibold drop-shadow-[0_0_8px_rgba(218,172,235,0.9)]">{email}</span>
           </p>
         </header>
 
@@ -366,12 +423,12 @@ export default function OtpVerification({
               sendSuccess
                 ? "border-emerald-400/50 text-emerald-200"
                 : isSending
-                ? "border-fuchsia-400/50 text-fuchsia-200"
+                ? "border-[#907cba]/50 text-[#daaceb]"
                 : "border-red-400/50 text-red-200"
             }`}
           >
             {isSending ? (
-              <svg className="w-4 h-4 text-fuchsia-400 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#daaceb] animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
@@ -392,7 +449,7 @@ export default function OtpVerification({
           {/* 5-Minute Timer (Positioned directly above the OTP section) */}
           <div className="flex flex-col items-center justify-center">
             <div className="relative group">
-              <div className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              <div className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
               <div className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full water-dewdrop-pill text-xs font-medium text-white shadow-md">
                 <svg className="w-4 h-4 text-white animate-spin" fill="none" viewBox="0 0 24 24" style={{ animationDuration: "6s" }}>
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
@@ -420,15 +477,17 @@ export default function OtpVerification({
 
             <div className="flex items-center justify-center gap-2.5 sm:gap-3" onPaste={handleOtpPaste}>
               {[0, 1, 2, 3, 4].map((index) => (
-                <div key={index} className="relative group">
+                <div key={index} className="relative group glass-input-wrapper w-11 h-14 sm:w-12 sm:h-14">
                   <div
-                    className="absolute -inset-0.5 rounded-full bg-slate-300/25 blur-sm opacity-0 group-hover:opacity-60 group-focus-within:opacity-75 transition-opacity pointer-events-none"
+                    className="hidden"
                     aria-hidden="true"
                   />
                   <input
                     id={`otp-box-${index}`}
                     type="text"
                     inputMode="numeric"
+                    autoComplete="one-time-code"
+                    spellCheck={false}
                     maxLength={2}
                     value={otp[index]}
                     onFocus={(e) => e.target.select()}
@@ -436,7 +495,7 @@ export default function OtpVerification({
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
                     autoFocus={index === 0}
                     aria-label={`OTP Digit ${index + 1}`}
-                    className="relative w-11 h-14 sm:w-12 sm:h-14 rounded-full glass-input-box text-center text-2xl font-semibold font-mono text-white outline-none transition-all shadow-sm"
+                    className="w-full h-full rounded-full glass-input-box text-center text-2xl font-semibold font-mono text-white outline-none"
                   />
                 </div>
               ))}
@@ -462,18 +521,17 @@ export default function OtpVerification({
           </div>
 
           {/* Action Button at Middle Bottom: "Continue" */}
-          <div className="relative group pt-1">
-            <div
-              className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-              aria-hidden="true"
-            />
-
+          <div className="relative pt-1">
             <button
               type="submit"
               disabled={isVerifying}
               onMouseDown={handleWaterRipple}
-              className="relative w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative group w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[14px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              <div
+                className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                aria-hidden="true"
+              />
               <span className="relative z-20 flex items-center justify-center gap-2 text-white">
                 {isVerifying ? (
                   <>
@@ -492,14 +550,14 @@ export default function OtpVerification({
           
         </form>
 
-        <footer className="mt-7 text-center text-sm bright-body">
+        <footer className="mt-7 text-center text-[13px] bright-body">
           Want to cancel?{" "}
           <button
             type="button"
             onClick={onCancel}
             className="bright-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 rounded cursor-pointer"
           >
-            Back to sign in
+            {purpose === "register" ? "Back to registration" : "Back to sign in"}
           </button>
         </footer>
       </main>

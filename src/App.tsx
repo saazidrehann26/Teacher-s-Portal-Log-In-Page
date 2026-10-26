@@ -1,6 +1,7 @@
 import {
   useState,
   useEffect,
+  useRef,
   type FormEvent,
 } from "react";
 import academicBg from "./assets/Gemini_Generated_Image_v5lj6qv5lj6qv5lj.jpg";
@@ -21,22 +22,26 @@ import { handleWaterRipple } from "./waterRipple";
 // Types & Validation Helpers
 // ============================================================================
 
-type ViewMode = "login" | "register" | "forgot_email" | "forgot_otp" | "forgot_reset";
+type ViewMode = "login" | "register" | "register_otp" | "forgot_email" | "forgot_otp" | "forgot_reset" | "portal";
 
 const viewToHash: Record<ViewMode, string> = {
   login: "#login",
   register: "#register",
+  register_otp: "#verify-email",
   forgot_email: "#forgot-password",
   forgot_otp: "#verify-otp",
   forgot_reset: "#reset-password",
+  portal: "#portal",
 };
 
 function hashToView(hash: string): ViewMode {
   const clean = (hash || "").replace(/^#/, "").toLowerCase();
   if (clean === "register") return "register";
+  if (clean === "verify-email" || clean === "register_otp" || clean === "register-otp") return "register_otp";
   if (clean === "forgot-password" || clean === "forgot_email" || clean === "forgot") return "forgot_email";
   if (clean === "verify-otp" || clean === "forgot_otp" || clean === "otp") return "forgot_otp";
   if (clean === "reset-password" || clean === "forgot_reset" || clean === "reset") return "forgot_reset";
+  if (clean === "portal" || clean === "dashboard") return "portal";
   return "login";
 }
 
@@ -127,6 +132,13 @@ function AcademicBackground() {
   );
 }
 
+function EmptyOtpFallback({ onRedirect }: { onRedirect: () => void }) {
+  useEffect(() => {
+    onRedirect();
+  }, [onRedirect]);
+  return null;
+}
+
 // ============================================================================
 // Main Application Component
 // ============================================================================
@@ -140,10 +152,15 @@ export default function App() {
     return "login";
   });
 
+  // Cinematic 3D spatial transition states
+  const [panelAnimClass, setPanelAnimClass] = useState<string>("panel-spatial-enter");
+  const [_isTransitioning, setIsTransitioning] = useState<boolean>(false);
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Login welcome/notification banner message
   const [loginNotice, setLoginNotice] = useState<string | undefined>();
 
-  // Database of Registered Teachers (Loaded from persistent database with itssrehann2324@gmail.com)
+  // Database of Registered Teachers (Loaded from persistent database)
   const [teacherDatabase, setTeacherDatabase] = useState<string[]>(() =>
     getDatabaseUsers().map((u) => u.email.toLowerCase())
   );
@@ -177,20 +194,57 @@ export default function App() {
     const handlePopState = (e: PopStateEvent) => {
       const targetView: ViewMode =
         (e.state && e.state.view) || hashToView(window.location.hash);
-      setView(targetView);
-      if (targetView !== "login") {
-        setLoginNotice(undefined);
+      
+      if (transitionTimerRef.current) {
+        clearTimeout(transitionTimerRef.current);
+        transitionTimerRef.current = null;
       }
+
+      setView((prev) => {
+        if (prev !== targetView) {
+          setPanelAnimClass("panel-spatial-exit");
+          setIsTransitioning(true);
+          transitionTimerRef.current = setTimeout(() => {
+            setView(targetView);
+            if (targetView !== "login" && targetView !== "portal") {
+              setLoginNotice(undefined);
+            }
+            setPanelAnimClass("panel-spatial-enter");
+            transitionTimerRef.current = setTimeout(() => {
+              setIsTransitioning(false);
+              transitionTimerRef.current = null;
+            }, 360);
+          }, 300);
+          return prev;
+        }
+        return prev;
+      });
     };
 
     const handleHashChange = () => {
       const targetView = hashToView(window.location.hash);
+
+      if (transitionTimerRef.current) {
+        clearTimeout(transitionTimerRef.current);
+        transitionTimerRef.current = null;
+      }
+
       setView((prev) => {
         if (prev !== targetView) {
-          if (targetView !== "login") {
-            setLoginNotice(undefined);
-          }
-          return targetView;
+          setPanelAnimClass("panel-spatial-exit");
+          setIsTransitioning(true);
+          transitionTimerRef.current = setTimeout(() => {
+            setView(targetView);
+            if (targetView !== "login" && targetView !== "portal") {
+              setLoginNotice(undefined);
+            }
+            setPanelAnimClass("panel-spatial-enter");
+            transitionTimerRef.current = setTimeout(() => {
+              setIsTransitioning(false);
+              transitionTimerRef.current = null;
+            }, 360);
+          }, 300);
+          return prev;
         }
         return prev;
       });
@@ -200,27 +254,64 @@ export default function App() {
     window.addEventListener("hashchange", handleHashChange);
 
     return () => {
+      if (transitionTimerRef.current) {
+        clearTimeout(transitionTimerRef.current);
+      }
       window.removeEventListener("popstate", handlePopState);
       window.removeEventListener("hashchange", handleHashChange);
     };
   }, []);
 
-  // Navigate to a new view and push to browser history
-  const navigateTo = (newView: ViewMode, replace = false) => {
-    if (newView !== "login") {
+  // Navigate to a new view with cinematic 3D receding exit and materializing entry
+  const navigateTo = (newView: ViewMode, replace = false, immediate = false) => {
+    if (newView !== "login" && newView !== "portal") {
       setLoginNotice(undefined);
     }
     if (newView === view) return;
 
-    if (typeof window !== "undefined") {
-      const targetHash = viewToHash[newView];
-      if (replace) {
-        window.history.replaceState({ view: newView }, "", targetHash);
-      } else {
-        window.history.pushState({ view: newView }, "", targetHash);
-      }
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
     }
-    setView(newView);
+
+    const targetHash = viewToHash[newView] || "#login";
+
+    if (immediate) {
+      if (typeof window !== "undefined") {
+        if (replace) {
+          window.history.replaceState({ view: newView }, "", targetHash);
+        } else {
+          window.history.pushState({ view: newView }, "", targetHash);
+        }
+      }
+      setView(newView);
+      setPanelAnimClass("panel-spatial-enter");
+      setIsTransitioning(false);
+      return;
+    }
+
+    setIsTransitioning(true);
+    setPanelAnimClass("panel-spatial-exit");
+
+    // Exit animation duration: 280ms (smoothly scales to 80% & fades out)
+    transitionTimerRef.current = setTimeout(() => {
+      if (typeof window !== "undefined") {
+        if (replace) {
+          window.history.replaceState({ view: newView }, "", targetHash);
+        } else {
+          window.history.pushState({ view: newView }, "", targetHash);
+        }
+      }
+      setView(newView);
+      // Entry animation: materializes from 80% scale & fades in to 100%
+      setPanelAnimClass("panel-spatial-enter");
+
+      // Locks firmly in foreground after 360ms
+      transitionTimerRef.current = setTimeout(() => {
+        setIsTransitioning(false);
+        transitionTimerRef.current = null;
+      }, 360);
+    }, 280);
   };
 
   // Theme state: dark mode defaults to true for maximum backlit neon impact
@@ -295,6 +386,9 @@ export default function App() {
 
       setLoggedInUser(result.user);
       setLoginSuccess(true);
+      setTimeout(() => {
+        navigateTo("portal");
+      }, 700);
     } catch {
       setLoginErrors({ general: "Sign in error. Please verify and try again." });
     } finally {
@@ -311,6 +405,15 @@ export default function App() {
     email: "",
     password: "",
     confirmPassword: "",
+  });
+  const [pendingRegistration, setPendingRegistration] = useState<RegisterFormValues | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = sessionStorage.getItem("teacher_portal_pending_reg");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return null;
   });
   const [regErrors, setRegErrors] = useState<RegisterFormErrors>({});
   const [showRegPassword, setShowRegPassword] = useState(false);
@@ -348,6 +451,8 @@ export default function App() {
     setIsRegLoading(true);
 
     try {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+
       // Prevent duplicate registration
       if (isEmailRegisteredInDatabase(cleanEmail)) {
         setRegErrors({
@@ -357,39 +462,24 @@ export default function App() {
         return;
       }
 
-      const registeredName = regValues.fullName.trim();
-
-      // Save newly registered teacher WITH password to database and persistent file
-      saveUserToDatabase({
-        fullName: registeredName,
-        email: cleanEmail,
+      // Store pending registration data to finalize upon successful OTP verification
+      const pendingData: RegisterFormValues = {
+        fullName: regValues.fullName.trim(),
         institutionName: regValues.institutionName.trim(),
+        email: cleanEmail,
         password: regValues.password,
-      });
+        confirmPassword: regValues.confirmPassword,
+      };
+      setPendingRegistration(pendingData);
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.setItem("teacher_portal_pending_reg", JSON.stringify(pendingData));
+        } catch {}
+      }
 
-      // Update in-memory database
-      setTeacherDatabase(getDatabaseUsers().map((u) => u.email.toLowerCase()));
-
-      // Pre-fill login email for convenience
-      setLoginValues({ email: cleanEmail, password: "", rememberMe: false });
-
-      // Clear registration form fields
-      setRegValues({
-        fullName: "",
-        institutionName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
+      // Clear any registration errors and advance to "Verify your email" page
       setRegErrors({});
-
-      // Set Welcome Sign-in notification
-      setLoginNotice(
-        `Account registered successfully! Welcome, ${registeredName || "Teacher"}. Please enter your password to sign in.`
-      );
-
-      // As soon as registration is completed, IMMEDIATELY navigate to the Welcome Sign In page
-      navigateTo("login");
+      navigateTo("register_otp");
     } catch {
       setRegErrors({ general: "Registration failed. Please check your inputs and try again." });
     } finally {
@@ -435,7 +525,7 @@ export default function App() {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1200));
 
-      // Check if email exists in teacher database (including itssrehann2324@gmail.com)
+      // Check if email exists in teacher database
       const exists = isEmailRegisteredInDatabase(cleanEmail) || teacherDatabase.includes(cleanEmail);
 
       if (!exists) {
@@ -527,7 +617,7 @@ export default function App() {
           aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
           className="relative group flex items-center gap-2 px-4 py-2 rounded-full water-dewdrop-pill text-xs font-medium text-white shadow-lg cursor-pointer transition-all"
         >
-          <div className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
           <span className="relative z-20 flex items-center gap-1.5 text-white">
             {isDark ? (
               <>
@@ -548,10 +638,13 @@ export default function App() {
         </button>
       </div>
 
-      {/* ==================================================================== */}
-      {/* 1. LOGIN PAGE VIEW                                                   */}
-      {/* ==================================================================== */}
-      {view === "login" && (
+      {/* 3D Perspective Scene Container for Cinematic Spatial Transitions */}
+      <div className="relative z-10 w-full flex justify-center perspective-spatial-container">
+        <div className={`w-full flex justify-center ${panelAnimClass}`}>
+          {/* ==================================================================== */}
+          {/* 1. LOGIN PAGE VIEW                                                   */}
+          {/* ==================================================================== */}
+          {view === "login" && (
         <div className="relative z-10 w-full max-w-md">
           <main className="relative w-full login-card glass-panel glass-gradient-border glass-specular-top rounded-3xl p-7 sm:p-9 transition-all">
             <header className="flex flex-col items-center text-center mb-8">
@@ -606,7 +699,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="email"
-                  className="font-label block text-sm tracking-wide bright-label mb-2"
+                  className="font-label block text-[13px] tracking-wide bright-label mb-2"
                 >
                   Enter your e-mail
                 </label>
@@ -616,26 +709,30 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       loginErrors.email
                         ? "bg-red-500/30 opacity-70"
-                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
+                        : "opacity-0"
                     }`}
                     aria-hidden="true"
                   />
 
-                  <div className="relative">
+                  <div className="relative glass-input-wrapper">
                     <input
                       id="email"
                       name="email"
                       type="email"
                       autoComplete="email"
+                      spellCheck={false}
+                      onBlur={(e) => {
+                        e.currentTarget.scrollLeft = 0;
+                      }}
                       required
                       disabled={isLoginLoading}
                       value={loginValues.email}
                       onChange={(e) => setLoginValues((prev) => ({ ...prev, email: e.target.value }))}
                       aria-invalid={Boolean(loginErrors.email)}
                       aria-describedby={loginErrors.email ? "email-error" : undefined}
-                      className={`w-full px-5 py-3 rounded-full text-sm transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed ${
+                      className={`w-full px-5 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed ${
                         loginErrors.email
-                          ? "!border-red-500 !text-red-200"
+                          ? "!text-red-200"
                           : ""
                       }`}
                     />
@@ -653,7 +750,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="password"
-                  className="font-label block text-sm tracking-wide bright-label mb-2"
+                  className="font-label block text-[13px] tracking-wide bright-label mb-2"
                 >
                   Password
                 </label>
@@ -663,26 +760,30 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       loginErrors.password
                         ? "bg-red-500/30 opacity-70"
-                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
+                        : "opacity-0"
                     }`}
                     aria-hidden="true"
                   />
 
-                  <div className="relative">
+                  <div className="relative glass-input-wrapper">
                     <input
                       id="password"
                       name="password"
                       type={showLoginPassword ? "text" : "password"}
                       autoComplete="current-password"
+                      spellCheck={false}
+                      onBlur={(e) => {
+                        e.currentTarget.scrollLeft = 0;
+                      }}
                       required
                       disabled={isLoginLoading}
                       value={loginValues.password}
                       onChange={(e) => setLoginValues((prev) => ({ ...prev, password: e.target.value }))}
                       aria-invalid={Boolean(loginErrors.password)}
                       aria-describedby={loginErrors.password ? "password-error" : undefined}
-                      className={`w-full pl-5 pr-12 py-3 rounded-full text-sm transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed ${
+                      className={`w-full pl-5 pr-12 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed ${
                         loginErrors.password
-                          ? "!border-red-500 !text-red-200"
+                          ? "!text-red-200"
                           : ""
                       }`}
                     />
@@ -716,7 +817,7 @@ export default function App() {
               </div>
 
               {/* Remember Me & Forgot Password Button */}
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-[13px]">
                 <label className="flex items-center gap-2.5 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -726,7 +827,7 @@ export default function App() {
                     disabled={isLoginLoading}
                     className="glass-checkbox disabled:cursor-not-allowed"
                   />
-                  <span className="bright-body text-sm">
+                  <span className="bright-body text-[13px]">
                     Remember me
                   </span>
                 </label>
@@ -735,25 +836,24 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => navigateTo("forgot_email")}
-                  className="text-sm bright-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 rounded cursor-pointer"
+                  className="text-[13px] bright-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 rounded cursor-pointer"
                 >
                   Forgot password?
                 </button>
               </div>
 
               {/* Submit Button Bar: "Access Teacher Portal" */}
-              <div className="relative group pt-1">
-                <div
-                  className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                  aria-hidden="true"
-                />
-
+              <div className="relative pt-1">
                 <button
                   type="submit"
                   disabled={isLoginLoading}
                   onMouseDown={handleWaterRipple}
-                  className="relative w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative group w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[14px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
+                  <div
+                    className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                    aria-hidden="true"
+                  />
                   <span className="relative z-20 flex items-center justify-center gap-2 text-white">
                     {isLoginLoading ? (
                       <>
@@ -772,7 +872,7 @@ export default function App() {
             </form>
 
             {/* Footer */}
-            <footer className="mt-8 text-center text-sm bright-body">
+            <footer className="mt-8 text-center text-[13px] bright-body">
               Need a new teacher account?{" "}
               <button
                 type="button"
@@ -802,7 +902,7 @@ export default function App() {
             {regErrors.general && (
               <div
                 role="alert"
-                className="mb-6 p-4 rounded-2xl water-dewdrop-pill border border-red-400/50 text-red-200 text-[15px] flex items-center gap-2 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                className="mb-6 p-4 rounded-2xl water-dewdrop-pill border border-red-400/50 text-red-200 text-[14px] flex items-center gap-2 font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
                 <svg className="w-5 h-5 flex-shrink-0 text-red-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" clipRule="evenodd" />
@@ -816,7 +916,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="reg-fullName"
-                  className="font-label block text-[15px] tracking-wide bright-label mb-1.5"
+                  className="font-label block text-[14px] tracking-wide bright-label mb-1.5"
                 >
                   Enter Your Full Name
                 </label>
@@ -826,21 +926,23 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       regErrors.fullName
                         ? "bg-red-500/30 opacity-70"
-                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
+                        : "opacity-0"
                     }`}
                     aria-hidden="true"
                   />
-                  <div className="relative">
+                  <div className="relative glass-input-wrapper">
                     <input
                       id="reg-fullName"
                       name="fullName"
                       type="text"
-                      autoComplete="name"
+                      autoComplete="off"
+                      spellCheck={false}
                       required
                       disabled={isRegLoading}
                       value={regValues.fullName}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, fullName: e.target.value }))}
-                      className="w-full px-5 py-3 rounded-full text-[15px] transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
+                      onBlur={(e) => { e.currentTarget.scrollLeft = 0; }}
+                      className="w-full px-5 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -855,7 +957,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="reg-institutionName"
-                  className="font-label block text-[15px] tracking-wide bright-label mb-1.5"
+                  className="font-label block text-[14px] tracking-wide bright-label mb-1.5"
                 >
                   Enter Institution Name:
                 </label>
@@ -865,21 +967,23 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       regErrors.institutionName
                         ? "bg-red-500/30 opacity-70"
-                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
+                        : "opacity-0"
                     }`}
                     aria-hidden="true"
                   />
-                  <div className="relative">
+                  <div className="relative glass-input-wrapper">
                     <input
                       id="reg-institutionName"
                       name="institutionName"
                       type="text"
-                      autoComplete="organization"
+                      autoComplete="off"
+                      spellCheck={false}
                       required
                       disabled={isRegLoading}
                       value={regValues.institutionName}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, institutionName: e.target.value }))}
-                      className="w-full px-5 py-3 rounded-full text-[15px] transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
+                      onBlur={(e) => { e.currentTarget.scrollLeft = 0; }}
+                      className="w-full px-5 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -894,7 +998,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="reg-email"
-                  className="font-label block text-[15px] tracking-wide bright-label mb-1.5"
+                  className="font-label block text-[14px] tracking-wide bright-label mb-1.5"
                 >
                   Enter Institution/Personal Mail
                 </label>
@@ -904,21 +1008,23 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       regErrors.email
                         ? "bg-red-500/30 opacity-70"
-                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
+                        : "opacity-0"
                     }`}
                     aria-hidden="true"
                   />
-                  <div className="relative">
+                  <div className="relative glass-input-wrapper">
                     <input
                       id="reg-email"
                       name="email"
                       type="email"
-                      autoComplete="email"
+                      autoComplete="off"
+                      spellCheck={false}
                       required
                       disabled={isRegLoading}
                       value={regValues.email}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-5 py-3 rounded-full text-[15px] transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
+                      onBlur={(e) => { e.currentTarget.scrollLeft = 0; }}
+                      className="w-full px-5 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -933,7 +1039,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="reg-password"
-                  className="font-label block text-[15px] tracking-wide bright-label mb-1.5"
+                  className="font-label block text-[14px] tracking-wide bright-label mb-1.5"
                 >
                   Enter Password
                 </label>
@@ -943,21 +1049,25 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       regErrors.password
                         ? "bg-red-500/30 opacity-70"
-                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
+                        : "opacity-0"
                     }`}
                     aria-hidden="true"
                   />
-                  <div className="relative">
+                  <div className="relative glass-input-wrapper">
                     <input
                       id="reg-password"
                       name="password"
                       type={showRegPassword ? "text" : "password"}
                       autoComplete="new-password"
+                      spellCheck={false}
+                      onBlur={(e) => {
+                        e.currentTarget.scrollLeft = 0;
+                      }}
                       required
                       disabled={isRegLoading}
                       value={regValues.password}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, password: e.target.value }))}
-                      className="w-full pl-5 pr-12 py-3 rounded-full text-[15px] transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full pl-5 pr-12 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -1014,7 +1124,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="reg-confirmPassword"
-                  className="font-label block text-[15px] tracking-wide bright-label mb-1.5"
+                  className="font-label block text-[14px] tracking-wide bright-label mb-1.5"
                 >
                   Enter Password Again
                 </label>
@@ -1024,21 +1134,25 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       regErrors.confirmPassword
                         ? "bg-red-500/30 opacity-70"
-                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
+                        : "opacity-0"
                     }`}
                     aria-hidden="true"
                   />
-                  <div className="relative">
+                  <div className="relative glass-input-wrapper">
                     <input
                       id="reg-confirmPassword"
                       name="confirmPassword"
                       type={showRegConfirmPassword ? "text" : "password"}
                       autoComplete="new-password"
+                      spellCheck={false}
+                      onBlur={(e) => {
+                        e.currentTarget.scrollLeft = 0;
+                      }}
                       required
                       disabled={isRegLoading}
                       value={regValues.confirmPassword}
                       onChange={(e) => setRegValues((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                      className="w-full pl-5 pr-12 py-3 rounded-full text-[15px] transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full pl-5 pr-12 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -1069,18 +1183,17 @@ export default function App() {
               </div>
 
               {/* Submit Button Bar: "Register" */}
-              <div className="relative group pt-3">
-                <div
-                  className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                  aria-hidden="true"
-                />
-
+              <div className="relative pt-3">
                 <button
                   type="submit"
                   disabled={isRegLoading}
                   onMouseDown={handleWaterRipple}
-                  className="relative w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[16px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative group w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
+                  <div
+                    className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                    aria-hidden="true"
+                  />
                   <span className="relative z-20 flex items-center justify-center gap-2 text-white">
                     {isRegLoading ? (
                       <>
@@ -1098,18 +1211,96 @@ export default function App() {
               </div>
             </form>
 
-            <footer className="mt-7 text-center text-[15px] bright-body">
+            <footer className="mt-7 text-center text-[14px] bright-body">
               Already have an account?{" "}
               <button
                 type="button"
                 onClick={() => navigateTo("login")}
                 className="bright-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 rounded cursor-pointer"
               >
-                Sign in
+                Access teacher portal
               </button>
             </footer>
           </main>
         </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* 2b. REGISTER STEP 2: "Verify your email" (Email Verification Page)     */}
+      {/* ==================================================================== */}
+      {view === "register_otp" && (
+        (pendingRegistration?.email || regValues.email) ? (
+          <OtpVerification
+            email={(pendingRegistration?.email || regValues.email).trim().toLowerCase()}
+            title="Verify your email"
+            subtitle="Check your email and put down the OTP"
+            showStaggeredDots={false}
+            purpose="register"
+            renderLogo={() => <LogoBadge />}
+            onSuccess={() => {
+              const dataToSave =
+                pendingRegistration ||
+                (regValues.email ? regValues : null) ||
+                (() => {
+                  if (typeof window !== "undefined") {
+                    try {
+                      const saved = sessionStorage.getItem("teacher_portal_pending_reg");
+                      if (saved) return JSON.parse(saved);
+                    } catch {}
+                  }
+                  return null;
+                })();
+
+              if (dataToSave && dataToSave.email) {
+                const registeredName = dataToSave.fullName.trim();
+                const userEmail = dataToSave.email.trim().toLowerCase();
+
+                // Save newly verified teacher WITH password to database and persistent file
+                saveUserToDatabase({
+                  fullName: registeredName,
+                  email: userEmail,
+                  institutionName: dataToSave.institutionName.trim(),
+                  password: dataToSave.password,
+                });
+
+                // Update in-memory database
+                setTeacherDatabase(getDatabaseUsers().map((u) => u.email.toLowerCase()));
+
+                // Pre-fill login email for convenience so user immediately sees their verified email
+                setLoginValues({ email: userEmail, password: "", rememberMe: false });
+
+                // Set Welcome Sign-in notification on login card
+                setLoginNotice(
+                  `Email verified & account registered successfully! Welcome, ${registeredName || "Teacher"}. Please enter your password to sign in.`
+                );
+
+                if (typeof window !== "undefined") {
+                  try {
+                    sessionStorage.removeItem("teacher_portal_pending_reg");
+                    sessionStorage.removeItem("teacher_portal_active_otp");
+                  } catch {}
+                }
+              }
+
+              // Immediately bring user to the very first login page with 3D entry
+              navigateTo("login", true, true);
+
+              // Clean up registration state now that login page is active
+              setPendingRegistration(null);
+              setRegValues({
+                fullName: "",
+                institutionName: "",
+                email: "",
+                password: "",
+                confirmPassword: "",
+              });
+              setRegErrors({});
+            }}
+            onCancel={() => navigateTo("register")}
+          />
+        ) : (
+          <EmptyOtpFallback onRedirect={() => navigateTo("login", true, true)} />
+        )
       )}
 
       {/* ==================================================================== */}
@@ -1133,7 +1324,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="recover-email"
-                  className="font-label block text-sm tracking-wide bright-label mb-2"
+                  className="font-label block text-[13px] tracking-wide bright-label mb-2"
                 >
                   Enter Your E-mail
                 </label>
@@ -1143,17 +1334,21 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       recoverEmailError
                         ? "bg-red-500/30 opacity-70"
-                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
+                        : "opacity-0"
                     }`}
                     aria-hidden="true"
                   />
 
-                  <div className="relative">
+                  <div className="relative glass-input-wrapper">
                     <input
                       id="recover-email"
                       name="email"
                       type="email"
                       autoComplete="email"
+                      spellCheck={false}
+                      onBlur={(e) => {
+                        e.currentTarget.scrollLeft = 0;
+                      }}
                       required
                       disabled={isCheckingEmail}
                       value={recoverEmail}
@@ -1161,7 +1356,7 @@ export default function App() {
                         setRecoverEmail(e.target.value);
                         if (recoverEmailError) setRecoverEmailError(undefined);
                       }}
-                      className="w-full px-5 py-3 rounded-full text-sm transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full px-5 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -1174,18 +1369,17 @@ export default function App() {
               </div>
 
               {/* Submit Button Bar */}
-              <div className="relative group pt-1">
-                <div
-                  className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                  aria-hidden="true"
-                />
-
+              <div className="relative pt-1">
                 <button
                   type="submit"
                   disabled={isCheckingEmail}
                   onMouseDown={handleWaterRipple}
-                  className="relative w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative group w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[14px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
+                  <div
+                    className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                    aria-hidden="true"
+                  />
                   <span className="relative z-20 flex items-center justify-center gap-2 text-white">
                     {isCheckingEmail ? (
                       <>
@@ -1203,7 +1397,7 @@ export default function App() {
               </div>
             </form>
 
-            <footer className="mt-7 text-center text-sm bright-body">
+            <footer className="mt-7 text-center text-[13px] bright-body">
               Remembered your credentials?{" "}
               <button
                 type="button"
@@ -1223,6 +1417,10 @@ export default function App() {
       {view === "forgot_otp" && (
         <OtpVerification
           email={recoverEmail}
+          title="Please Wait"
+          subtitle="Check your email and put down the OTP"
+          showStaggeredDots={true}
+          purpose="forgot"
           renderLogo={() => <LogoBadge />}
           onSuccess={() => {
             navigateTo("forgot_reset");
@@ -1256,7 +1454,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="new-password"
-                  className="font-label block text-sm tracking-wide bright-label mb-2"
+                  className="font-label block text-[13px] tracking-wide bright-label mb-2"
                 >
                   Enter New password
                 </label>
@@ -1266,16 +1464,20 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       resetErrors.password
                         ? "bg-red-500/30 opacity-70"
-                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
+                        : "opacity-0"
                     }`}
                     aria-hidden="true"
                   />
-                  <div className="relative">
+                  <div className="relative glass-input-wrapper">
                     <input
                       id="new-password"
                       name="newPassword"
                       type={showNewPassword ? "text" : "password"}
                       autoComplete="new-password"
+                      spellCheck={false}
+                      onBlur={(e) => {
+                        e.currentTarget.scrollLeft = 0;
+                      }}
                       required
                       disabled={isRecovering}
                       value={newPassword}
@@ -1283,7 +1485,7 @@ export default function App() {
                         setNewPassword(e.target.value);
                         if (resetErrors.password) setResetErrors((prev) => ({ ...prev, password: undefined }));
                       }}
-                      className="w-full pl-5 pr-12 py-3 rounded-full text-sm transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full pl-5 pr-12 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -1341,7 +1543,7 @@ export default function App() {
               <div>
                 <label
                   htmlFor="confirm-new-password"
-                  className="font-label block text-sm tracking-wide bright-label mb-2"
+                  className="font-label block text-[13px] tracking-wide bright-label mb-2"
                 >
                   Enter your password again
                 </label>
@@ -1351,16 +1553,20 @@ export default function App() {
                     className={`absolute -inset-0.5 rounded-full blur-sm transition-all duration-300 pointer-events-none ${
                       resetErrors.confirm
                         ? "bg-red-500/30 opacity-70"
-                        : "bg-slate-300/25 opacity-0 group-hover:opacity-60 group-focus-within:opacity-75"
+                        : "opacity-0"
                     }`}
                     aria-hidden="true"
                   />
-                  <div className="relative">
+                  <div className="relative glass-input-wrapper">
                     <input
                       id="confirm-new-password"
                       name="confirmNewPassword"
                       type={showConfirmNewPassword ? "text" : "password"}
                       autoComplete="new-password"
+                      spellCheck={false}
+                      onBlur={(e) => {
+                        e.currentTarget.scrollLeft = 0;
+                      }}
                       required
                       disabled={isRecovering}
                       value={confirmNewPassword}
@@ -1368,7 +1574,7 @@ export default function App() {
                         setConfirmNewPassword(e.target.value);
                         if (resetErrors.confirm) setResetErrors((prev) => ({ ...prev, confirm: undefined }));
                       }}
-                      className="w-full pl-5 pr-12 py-3 rounded-full text-sm transition-all outline-none glass-input-box text-white font-normal disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full pl-5 pr-12 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -1400,18 +1606,17 @@ export default function App() {
               </div>
 
               {/* Action Button at Bottom Middle: "Recover" */}
-              <div className="relative group pt-2">
-                <div
-                  className="absolute -inset-0.5 rounded-full bg-fuchsia-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                  aria-hidden="true"
-                />
-
+              <div className="relative pt-2">
                 <button
                   type="submit"
                   disabled={isRecovering}
                   onMouseDown={handleWaterRipple}
-                  className="relative w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative group w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[14px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
+                  <div
+                    className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                    aria-hidden="true"
+                  />
                   <span className="relative z-20 flex items-center justify-center gap-2 text-white">
                     {isRecovering ? (
                       <>
@@ -1429,7 +1634,7 @@ export default function App() {
               </div>
             </form>
 
-            <footer className="mt-7 text-center text-sm bright-body">
+            <footer className="mt-7 text-center text-[13px] bright-body">
               Back to portal?{" "}
               <button
                 type="button"
@@ -1442,6 +1647,90 @@ export default function App() {
           </main>
         </div>
       )}
+
+      {/* ==================================================================== */}
+      {/* 6. TEACHER PORTAL ACTIVE SESSION DASHBOARD VIEW                      */}
+      {/* ==================================================================== */}
+      {view === "portal" && (
+        <div className="relative z-10 w-full max-w-lg">
+          <main className="relative w-full login-card glass-panel glass-gradient-border glass-specular-top rounded-3xl p-7 sm:p-9 transition-all">
+            <header className="flex flex-col items-center text-center mb-6">
+              <LogoBadge />
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full water-dewdrop-pill border border-emerald-400/50 text-emerald-300 text-xs font-medium mb-3 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Teacher Session Active
+              </div>
+              <h1 className="text-[26px] sm:text-[28px] tracking-normal bright-heading">
+                Teacher's Portal
+              </h1>
+              <p className="mt-1.5 text-sm bright-body">
+                Welcome, <span className="text-white font-semibold drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]">{loggedInUser?.fullName || "Faculty Member"}</span>
+              </p>
+            </header>
+
+            {/* Teacher Information Summary Card */}
+            <div className="p-4 rounded-2xl glass-panel border border-white/20 mb-6 space-y-2.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-zinc-300">Department / Institution:</span>
+                <span className="text-white font-medium">{loggedInUser?.institutionName || "Faculty of Academics"}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-zinc-300">Authenticated Email:</span>
+                <span className="text-[#daaceb] font-mono font-medium drop-shadow-[0_0_6px_rgba(218,172,235,0.8)]">
+                  {loggedInUser?.email || "verified.teacher@portal.edu"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-zinc-300">Portal Security:</span>
+                <span className="text-emerald-300 font-medium flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Verified Credentials
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Workspace Modules */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="p-3.5 rounded-2xl glass-panel border border-white/15 hover:border-white/35 transition-all text-center">
+                <div className="w-8 h-8 mx-auto mb-1.5 rounded-full water-dewdrop-pill flex items-center justify-center text-white text-xs">
+                  📚
+                </div>
+                <div className="text-xs font-semibold text-white">Course Materials</div>
+                <div className="text-[10px] text-zinc-300">Class Syllabi & Notes</div>
+              </div>
+              <div className="p-3.5 rounded-2xl glass-panel border border-white/15 hover:border-white/35 transition-all text-center">
+                <div className="w-8 h-8 mx-auto mb-1.5 rounded-full water-dewdrop-pill flex items-center justify-center text-white text-xs">
+                  📊
+                </div>
+                <div className="text-xs font-semibold text-white">Student Grades</div>
+                <div className="text-[10px] text-zinc-300">Evaluation Records</div>
+              </div>
+            </div>
+
+            {/* Sign Out Button (Returns to Login via 3D Transition) */}
+            <div className="relative pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setLoggedInUser(undefined);
+                  setLoginSuccess(false);
+                  navigateTo("login");
+                }}
+                onMouseDown={handleWaterRipple}
+                className="relative group w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[14px] font-medium text-white shadow-lg cursor-pointer transition-all"
+              >
+                <span className="relative z-20 flex items-center justify-center gap-2 text-white">
+                  <span>Sign Out of Portal</span>
+                </span>
+              </button>
+            </div>
+          </main>
+        </div>
+      )}
+        </div>
+      </div>
     </div>
   );
 }
