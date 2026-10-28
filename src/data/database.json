@@ -2,6 +2,76 @@
   "description": "Teacher Portal User Database",
   "users": [
     {
+      "id": "usr_1793206216180",
+      "fullName": "Sazid Rehan",
+      "email": "itssrehann2324@gmail.com",
+      "institutionName": "Ahsanullah University of Science & Technology",
+      "password": "1202324011024s@xiDDDD",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-28T16:50:16.180Z"
+    },
+    {
+      "id": "usr_1793204564196",
+      "fullName": "Prof. Arthur Pendelton",
+      "email": "teacher_test_1793204561109@oxford.ac.uk",
+      "institutionName": "Oxford University",
+      "password": "OxfordTeacher1234!",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-28T16:22:44.196Z"
+    },
+    {
+      "id": "usr_1793204514268",
+      "fullName": "Prof. Arthur Pendelton",
+      "email": "teacher_test_1793204511174@oxford.ac.uk",
+      "institutionName": "Oxford University",
+      "password": "OxfordTeacher1234!",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-28T16:21:54.268Z"
+    },
+    {
+      "id": "usr_1793204484975",
+      "fullName": "Prof. Arthur Pendelton",
+      "email": "teacher_test_1793204481843@oxford.ac.uk",
+      "institutionName": "Oxford University",
+      "password": "OxfordTeacher1234!",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-28T16:21:24.975Z"
+    },
+    {
+      "id": "usr_1793204450444",
+      "fullName": "Prof. Arthur Pendelton",
+      "email": "teacher_test_1793204447301@oxford.ac.uk",
+      "institutionName": "Oxford University",
+      "password": "OxfordTeacher1234!",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-28T16:20:50.444Z"
+    },
+    {
+      "id": "usr_1793200427812",
+      "fullName": "Test User",
+      "email": "desaw13915@37xiao.com",
+      "institutionName": "XYZ University",
+      "password": "user2",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-28T15:13:47.812Z"
+    },
+    {
+      "id": "usr_1793099337007",
+      "fullName": "Sazid Rehan",
+      "email": "genelo7652@37xiao.com",
+      "institutionName": "Ahsanullah University of Science & Technology",
+      "password": "newpassword123",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-27T11:08:57.007Z"
+    },
+    {
       "id": "usr_1793032974591",
       "fullName": "user2",
       "email": "fewol82229@agaexpress.com",
@@ -116,7 +186,7 @@
       "fullName": "Sazid Rehan",
       "email": "sazid.cse.00725205101061@aust.edu",
       "institutionName": "Ahsanullah University of Science & Technology",
-      "password": "user",
+      "password": "heyd",
       "role": "Educator",
       "status": "active",
       "createdAt": "2026-10-24T11:07:40.333Z"

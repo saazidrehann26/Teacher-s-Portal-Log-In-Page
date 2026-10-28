@@ -261,7 +261,7 @@ export default function OtpVerification({
     }
   };
 
-  // Handle Backspace and Arrow Key navigation
+  // Handle Backspace, Arrow Key and Enter navigation
   const handleOtpKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace") {
       if (!otp[index] && index > 0) {
@@ -275,6 +275,11 @@ export default function OtpVerification({
       document.getElementById(`otp-box-${index - 1}`)?.focus();
     } else if (e.key === "ArrowRight" && index < 4) {
       document.getElementById(`otp-box-${index + 1}`)?.focus();
+    } else if (e.key === "Enter") {
+      if (index < 4) {
+        e.preventDefault();
+        document.getElementById(`otp-box-${index + 1}`)?.focus();
+      }
     }
   };
 
@@ -365,17 +370,18 @@ export default function OtpVerification({
       }
 
       if (isValid) {
-        // Validated successfully! Advance view
+        // Validated successfully! Advance view immediately without resetting button state
         onSuccess();
-      } else {
-        setOtpError("Invalid verification code. Please check your email and try again.");
+        return;
+      }
+
+      setOtpError("Invalid verification code. Please check your email and try again.");
+      if (!isUnmountedRef.current) {
+        setIsVerifying(false);
       }
     } catch {
       if (!isUnmountedRef.current) {
         setOtpError("Verification failed. Please try again.");
-      }
-    } finally {
-      if (!isUnmountedRef.current) {
         setIsVerifying(false);
       }
     }
@@ -493,9 +499,10 @@ export default function OtpVerification({
                     onFocus={(e) => e.target.select()}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    enterKeyHint={index < 4 ? "next" : "go"}
                     autoFocus={index === 0}
                     aria-label={`OTP Digit ${index + 1}`}
-                    className="w-full h-full rounded-full glass-input-box text-center text-2xl font-semibold font-mono text-white outline-none"
+                    className="w-full h-full rounded-full glass-input-box otp-input-box text-center text-[28px] sm:text-[30px] font-bold text-white outline-none"
                   />
                 </div>
               ))}

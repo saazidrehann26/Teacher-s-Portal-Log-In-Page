@@ -187,12 +187,12 @@ textarea {
     transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-/* Hover & Focus state: identical smooth springy lift to dark/light theme button */
+/* Hover & Focus state: identical smooth springy lift to dark/light theme button without fractional scale distortion */
 .glass-input-wrapper:hover,
 .glass-input-wrapper:focus-within,
 .relative:has(> .glass-input-box:hover),
 .relative:has(> .glass-input-box:focus) {
-  transform: translateY(-3px) scale(1.01) !important;
+  transform: translateY(-3px) !important;
   border-color: rgba(241, 245, 249, 0.75) !important;
   box-shadow:
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.85),
@@ -201,10 +201,10 @@ textarea {
     0 0 16px rgba(226, 232, 240, 0.3) !important;
 }
 
-/* Click / Active state: Springs further upward upon user click, matching dark/light button */
+/* Click / Active state: Springs further upward upon user click, matching dark/light button without fractional scale */
 .glass-input-wrapper:active,
 .relative:has(> .glass-input-box:active) {
-  transform: translateY(-4.5px) scale(1.018) !important;
+  transform: translateY(-4.5px) !important;
   border-color: rgba(255, 255, 255, 0.95) !important;
   box-shadow:
     inset 0 2px 3px 0 rgba(255, 255, 255, 0.95),
@@ -230,13 +230,14 @@ textarea {
 .glass-input-box {
   color-scheme: dark;
   font-family: var(--font-ui) !important;
-  font-size: 14.5px !important;
-  font-weight: 600 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
   line-height: normal !important;
-  letter-spacing: 0.02em !important;
-  -webkit-font-smoothing: subpixel-antialiased !important;
-  -moz-osx-font-smoothing: auto !important;
-  text-rendering: geometricPrecision !important;
+  letter-spacing: 0.015em !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+  font-synthesis: none !important;
   cursor: text;
   background: transparent !important;
   background-color: transparent !important;
@@ -245,9 +246,29 @@ textarea {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
   caret-color: #ffffff !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.5) !important;
+  text-shadow: none !important;
   box-shadow: none !important;
-  transform: none !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+}
+
+/* Specific styling for OTP input digits: large, bold, prominent, and cleanly centered */
+.otp-input-box,
+input[id^="otp-box-"] {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  line-height: normal !important;
+  letter-spacing: normal !important;
+  text-align: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+@media (min-width: 640px) {
+  .otp-input-box,
+  input[id^="otp-box-"] {
+    font-size: 30px !important;
+  }
 }
 
 .glass-input-box::placeholder {
@@ -256,6 +277,8 @@ textarea {
   text-shadow: none !important;
   font-family: inherit !important;
   letter-spacing: 0.01em !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
 }
 
 /* Synchronize password toggle eye icon glow */
@@ -290,14 +313,15 @@ input:-webkit-autofill:active {
   -webkit-text-fill-color: #ffffff !important;
   caret-color: #ffffff !important;
   color: #ffffff !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.5) !important;
-  font-weight: 600 !important;
-  font-size: 14.5px !important;
-  letter-spacing: 0.02em !important;
+  text-shadow: none !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  letter-spacing: 0.015em !important;
   font-family: var(--font-ui) !important;
-  -webkit-font-smoothing: subpixel-antialiased !important;
-  -moz-osx-font-smoothing: auto !important;
-  text-rendering: geometricPrecision !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+  font-synthesis: none !important;
   background: transparent !important;
   background-color: transparent !important;
   border: none !important;
@@ -631,49 +655,49 @@ a.water-dewdrop-pill:active::before,
 /* ============================================================================ */
 
 .perspective-spatial-container {
-  perspective: 1200px;
   perspective-origin: center center;
+}
+
+.perspective-spatial-container:has(.panel-spatial-exit),
+.perspective-spatial-container:has(.panel-spatial-enter) {
+  perspective: 1200px;
   transform-style: preserve-3d;
 }
 
-/* Outgoing panel shrinks along Z-axis to 80% scale and fades from 100% to 0% */
+/* Outgoing panel shrinks along Z-axis to 85% scale and fades from 100% to 0% */
 .panel-spatial-exit {
-  animation: panelSpatialExit 0.34s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: panelSpatialExit 0.24s cubic-bezier(0.4, 0, 0.2, 1) both !important;
   pointer-events: none;
   transform-origin: center center;
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
 }
 
-/* Incoming panel emerges from 80% scale in deep background to full 100% foreground */
+/* Incoming panel emerges from 85% scale in deep background to full 100% foreground */
 .panel-spatial-enter {
-  animation: panelSpatialEnter 0.36s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: panelSpatialEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both !important;
   transform-origin: center center;
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
 }
 
 @keyframes panelSpatialExit {
   0% {
     opacity: 1;
     transform: perspective(1200px) scale(1) translateZ(0);
-    filter: blur(0px);
   }
   100% {
     opacity: 0;
-    transform: perspective(1200px) scale(0.8) translateZ(-160px);
-    filter: blur(4px);
+    transform: perspective(1200px) scale(0.85) translateZ(-120px);
   }
 }
 
 @keyframes panelSpatialEnter {
   0% {
     opacity: 0;
-    transform: perspective(1200px) scale(0.8) translateZ(-160px);
-    filter: blur(4px);
+    transform: perspective(1200px) scale(0.85) translateZ(-120px);
   }
   100% {
     opacity: 1;
     transform: perspective(1200px) scale(1) translateZ(0);
-    filter: blur(0px);
   }
 }
 

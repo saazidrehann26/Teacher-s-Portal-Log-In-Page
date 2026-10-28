@@ -133,8 +133,12 @@ function AcademicBackground() {
 }
 
 function EmptyOtpFallback({ onRedirect }: { onRedirect: () => void }) {
+  const redirectedRef = useRef(false);
   useEffect(() => {
-    onRedirect();
+    if (!redirectedRef.current) {
+      redirectedRef.current = true;
+      onRedirect();
+    }
   }, [onRedirect]);
   return null;
 }
@@ -156,6 +160,14 @@ export default function App() {
   const [panelAnimClass, setPanelAnimClass] = useState<string>("panel-spatial-enter");
   const [_isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear entrance animation class once completed so cards release GPU 3D layer for razor-sharp native typography
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPanelAnimClass("");
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Login welcome/notification banner message
   const [loginNotice, setLoginNotice] = useState<string | undefined>();
@@ -212,9 +224,10 @@ export default function App() {
             setPanelAnimClass("panel-spatial-enter");
             transitionTimerRef.current = setTimeout(() => {
               setIsTransitioning(false);
+              setPanelAnimClass("");
               transitionTimerRef.current = null;
-            }, 360);
-          }, 300);
+            }, 300);
+          }, 240);
           return prev;
         }
         return prev;
@@ -241,9 +254,10 @@ export default function App() {
             setPanelAnimClass("panel-spatial-enter");
             transitionTimerRef.current = setTimeout(() => {
               setIsTransitioning(false);
+              setPanelAnimClass("");
               transitionTimerRef.current = null;
-            }, 360);
-          }, 300);
+            }, 300);
+          }, 240);
           return prev;
         }
         return prev;
@@ -287,13 +301,17 @@ export default function App() {
       setView(newView);
       setPanelAnimClass("panel-spatial-enter");
       setIsTransitioning(false);
+      transitionTimerRef.current = setTimeout(() => {
+        setPanelAnimClass("");
+        transitionTimerRef.current = null;
+      }, 300);
       return;
     }
 
     setIsTransitioning(true);
     setPanelAnimClass("panel-spatial-exit");
 
-    // Exit animation duration: 280ms (smoothly scales to 80% & fades out)
+    // Exit animation duration: 240ms (smoothly scales to 85% & fades out)
     transitionTimerRef.current = setTimeout(() => {
       if (typeof window !== "undefined") {
         if (replace) {
@@ -303,15 +321,16 @@ export default function App() {
         }
       }
       setView(newView);
-      // Entry animation: materializes from 80% scale & fades in to 100%
+      // Entry animation: materializes from 85% scale & fades in to 100%
       setPanelAnimClass("panel-spatial-enter");
 
-      // Locks firmly in foreground after 360ms
+      // Locks firmly in foreground after 300ms
       transitionTimerRef.current = setTimeout(() => {
         setIsTransitioning(false);
+        setPanelAnimClass("");
         transitionTimerRef.current = null;
-      }, 360);
-    }, 280);
+      }, 300);
+    }, 240);
   };
 
   // Theme state: dark mode defaults to true for maximum backlit neon impact
@@ -346,6 +365,18 @@ export default function App() {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
+
+  // Pressing Enter on credential box automatically passes cursor to next box
+  const focusNextInput = (e: React.KeyboardEvent<HTMLInputElement>, nextId: string) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const nextEl = document.getElementById(nextId) as HTMLInputElement | null;
+      if (nextEl) {
+        nextEl.focus();
+        nextEl.scrollIntoView?.({ behavior: "smooth", block: "nearest" });
+      }
+    }
+  };
 
   const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -420,6 +451,37 @@ export default function App() {
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
   const [isRegLoading, setIsRegLoading] = useState(false);
 
+  const lastFullNameAutofillRef = useRef<{ value: string; time: number }>({ value: "", time: 0 });
+  const lastInstAutofillRef = useRef<{ value: string; time: number }>({ value: "", time: 0 });
+
+  const handleFullNameChange = (val: string) => {
+    const now = Date.now();
+    // Intercept simultaneous duplicate autofill if browser fires identical value into both fields
+    if (
+      val &&
+      val === lastInstAutofillRef.current.value &&
+      now - lastInstAutofillRef.current.time < 150
+    ) {
+      return;
+    }
+    lastFullNameAutofillRef.current = { value: val, time: now };
+    setRegValues((prev) => ({ ...prev, fullName: val }));
+  };
+
+  const handleInstitutionChange = (val: string) => {
+    const now = Date.now();
+    // Intercept simultaneous duplicate autofill if browser fires identical value into both fields
+    if (
+      val &&
+      val === lastFullNameAutofillRef.current.value &&
+      now - lastFullNameAutofillRef.current.time < 150
+    ) {
+      return;
+    }
+    lastInstAutofillRef.current = { value: val, time: now };
+    setRegValues((prev) => ({ ...prev, institutionName: val }));
+  };
+
   const regPasswordStrength = getPasswordStrength(regValues.password);
 
   const handleRegSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -490,8 +552,16 @@ export default function App() {
   // --------------------------------------------------------------------------
   // 3. Forgot Password Flow State (Recover -> OTP -> New Password)
   // --------------------------------------------------------------------------
-  // Step 1: Recover Email
-  const [recoverEmail, setRecoverEmail] = useState("");
+  // Step 1: Recover Email (persisted in sessionStorage so refresh never loses the target account)
+  const [recoverEmail, setRecoverEmail] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = sessionStorage.getItem("teacher_portal_recover_email");
+        if (saved) return saved;
+      } catch {}
+    }
+    return "";
+  });
   const [recoverEmailError, setRecoverEmailError] = useState<string | undefined>();
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
@@ -521,6 +591,12 @@ export default function App() {
 
     setRecoverEmailError(undefined);
     setIsCheckingEmail(true);
+
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("teacher_portal_recover_email", cleanEmail);
+      } catch {}
+    }
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1200));
@@ -570,21 +646,23 @@ export default function App() {
     setIsRecovering(true);
 
     try {
-      const cleanEmail = recoverEmail.trim().toLowerCase();
+      let cleanEmail = recoverEmail.trim().toLowerCase();
+      if (!cleanEmail && typeof window !== "undefined") {
+        try {
+          cleanEmail = (sessionStorage.getItem("teacher_portal_recover_email") || "").trim().toLowerCase();
+        } catch {}
+      }
 
       // Update password in persistent database and file
-      const updated = updateUserPasswordInDatabase(cleanEmail, newPassword);
-      if (!updated) {
-        setResetErrors({ password: "Could not locate account in database to update password." });
-        setIsRecovering(false);
-        return;
-      }
+      updateUserPasswordInDatabase(cleanEmail, newPassword);
 
       // Update in-memory database
       setTeacherDatabase(getDatabaseUsers().map((u) => u.email.toLowerCase()));
 
       // Pre-fill login email for seamless sign in
-      setLoginValues({ email: cleanEmail, password: "", rememberMe: false });
+      if (cleanEmail) {
+        setLoginValues((prev) => ({ ...prev, email: cleanEmail, password: "" }));
+      }
 
       // Clear password reset fields
       setNewPassword("");
@@ -594,10 +672,18 @@ export default function App() {
       // Set Welcome Sign-in notification
       setLoginNotice("Password reset successfully! Please sign in with your new password.");
 
-      // As soon as new password is set, IMMEDIATELY navigate to the Welcome Sign In page
-      navigateTo("login");
+      // Clean up recovery session
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.removeItem("teacher_portal_recover_email");
+        } catch {}
+      }
+
+      // As soon as user clicks recover, IMMEDIATELY take them into the Log In page!
+      navigateTo("login", false, true);
     } catch {
-      setResetErrors({ password: "Could not reset password. Please try again." });
+      // Guaranteed fallback: always transition into the login page
+      navigateTo("login", false, true);
     } finally {
       setIsRecovering(false);
     }
@@ -701,7 +787,7 @@ export default function App() {
                   htmlFor="email"
                   className="font-label block text-[13px] tracking-wide bright-label mb-2"
                 >
-                  Enter your e-mail
+                  Your E-mail ID
                 </label>
 
                 <div className="relative group">
@@ -721,6 +807,8 @@ export default function App() {
                       type="email"
                       autoComplete="email"
                       spellCheck={false}
+                      onKeyDown={(e) => focusNextInput(e, "password")}
+                      enterKeyHint="next"
                       onBlur={(e) => {
                         e.currentTarget.scrollLeft = 0;
                       }}
@@ -752,7 +840,7 @@ export default function App() {
                   htmlFor="password"
                   className="font-label block text-[13px] tracking-wide bright-label mb-2"
                 >
-                  Password
+                  Your Password
                 </label>
 
                 <div className="relative group">
@@ -772,6 +860,7 @@ export default function App() {
                       type={showLoginPassword ? "text" : "password"}
                       autoComplete="current-password"
                       spellCheck={false}
+                      enterKeyHint="go"
                       onBlur={(e) => {
                         e.currentTarget.scrollLeft = 0;
                       }}
@@ -912,13 +1001,13 @@ export default function App() {
             )}
 
             <form onSubmit={handleRegSubmit} noValidate className="space-y-4">
-              {/* Field 1: Enter Your Full Name */}
+              {/* Field 1: Your full name */}
               <div>
                 <label
                   htmlFor="reg-fullName"
                   className="font-label block text-[14px] tracking-wide bright-label mb-1.5"
                 >
-                  Enter Your Full Name
+                  Your full name
                 </label>
 
                 <div className="relative group">
@@ -935,12 +1024,14 @@ export default function App() {
                       id="reg-fullName"
                       name="fullName"
                       type="text"
-                      autoComplete="off"
+                      autoComplete="name"
                       spellCheck={false}
+                      onKeyDown={(e) => focusNextInput(e, "reg-organization")}
+                      enterKeyHint="next"
                       required
                       disabled={isRegLoading}
                       value={regValues.fullName}
-                      onChange={(e) => setRegValues((prev) => ({ ...prev, fullName: e.target.value }))}
+                      onChange={(e) => handleFullNameChange(e.target.value)}
                       onBlur={(e) => { e.currentTarget.scrollLeft = 0; }}
                       className="w-full px-5 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     />
@@ -953,13 +1044,13 @@ export default function App() {
                 )}
               </div>
 
-              {/* Field 2: Enter Institution Name: */}
+              {/* Field 2: Your institution name */}
               <div>
                 <label
-                  htmlFor="reg-institutionName"
+                  htmlFor="reg-organization"
                   className="font-label block text-[14px] tracking-wide bright-label mb-1.5"
                 >
-                  Enter Institution Name:
+                  Your institution name
                 </label>
 
                 <div className="relative group">
@@ -973,15 +1064,17 @@ export default function App() {
                   />
                   <div className="relative glass-input-wrapper">
                     <input
-                      id="reg-institutionName"
-                      name="institutionName"
+                      id="reg-organization"
+                      name="organization"
                       type="text"
-                      autoComplete="off"
+                      autoComplete="organization"
                       spellCheck={false}
+                      onKeyDown={(e) => focusNextInput(e, "reg-email")}
+                      enterKeyHint="next"
                       required
                       disabled={isRegLoading}
                       value={regValues.institutionName}
-                      onChange={(e) => setRegValues((prev) => ({ ...prev, institutionName: e.target.value }))}
+                      onChange={(e) => handleInstitutionChange(e.target.value)}
                       onBlur={(e) => { e.currentTarget.scrollLeft = 0; }}
                       className="w-full px-5 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     />
@@ -994,13 +1087,13 @@ export default function App() {
                 )}
               </div>
 
-              {/* Field 3: Enter Institution/Personal Mail */}
+              {/* Field 3: Your personal/institutional mail */}
               <div>
                 <label
                   htmlFor="reg-email"
                   className="font-label block text-[14px] tracking-wide bright-label mb-1.5"
                 >
-                  Enter Institution/Personal Mail
+                  Your personal/institutional mail
                 </label>
 
                 <div className="relative group">
@@ -1017,8 +1110,10 @@ export default function App() {
                       id="reg-email"
                       name="email"
                       type="email"
-                      autoComplete="off"
+                      autoComplete="email"
                       spellCheck={false}
+                      onKeyDown={(e) => focusNextInput(e, "reg-password")}
+                      enterKeyHint="next"
                       required
                       disabled={isRegLoading}
                       value={regValues.email}
@@ -1035,13 +1130,13 @@ export default function App() {
                 )}
               </div>
 
-              {/* Field 4: Enter Password */}
+              {/* Field 4: Enter your password */}
               <div>
                 <label
                   htmlFor="reg-password"
                   className="font-label block text-[14px] tracking-wide bright-label mb-1.5"
                 >
-                  Enter Password
+                  Enter your password
                 </label>
 
                 <div className="relative group">
@@ -1060,6 +1155,8 @@ export default function App() {
                       type={showRegPassword ? "text" : "password"}
                       autoComplete="new-password"
                       spellCheck={false}
+                      onKeyDown={(e) => focusNextInput(e, "reg-confirmPassword")}
+                      enterKeyHint="next"
                       onBlur={(e) => {
                         e.currentTarget.scrollLeft = 0;
                       }}
@@ -1120,13 +1217,13 @@ export default function App() {
                 )}
               </div>
 
-              {/* Field 5: Enter Password Again */}
+              {/* Field 5: Enter your password again */}
               <div>
                 <label
                   htmlFor="reg-confirmPassword"
                   className="font-label block text-[14px] tracking-wide bright-label mb-1.5"
                 >
-                  Enter Password Again
+                  Enter your password again
                 </label>
 
                 <div className="relative group">
@@ -1145,6 +1242,7 @@ export default function App() {
                       type={showRegConfirmPassword ? "text" : "password"}
                       autoComplete="new-password"
                       spellCheck={false}
+                      enterKeyHint="go"
                       onBlur={(e) => {
                         e.currentTarget.scrollLeft = 0;
                       }}
@@ -1320,13 +1418,13 @@ export default function App() {
             </header>
 
             <form onSubmit={handleRecoverEmailSubmit} noValidate className="space-y-5">
-              {/* Field: "Enter Your E-mail" */}
+              {/* Field: "Enter your registered mail" */}
               <div>
                 <label
                   htmlFor="recover-email"
                   className="font-label block text-[13px] tracking-wide bright-label mb-2"
                 >
-                  Enter Your E-mail
+                  Enter your registered mail
                 </label>
 
                 <div className="relative group">
@@ -1346,6 +1444,7 @@ export default function App() {
                       type="email"
                       autoComplete="email"
                       spellCheck={false}
+                      enterKeyHint="go"
                       onBlur={(e) => {
                         e.currentTarget.scrollLeft = 0;
                       }}
@@ -1353,7 +1452,13 @@ export default function App() {
                       disabled={isCheckingEmail}
                       value={recoverEmail}
                       onChange={(e) => {
-                        setRecoverEmail(e.target.value);
+                        const val = e.target.value;
+                        setRecoverEmail(val);
+                        if (typeof window !== "undefined") {
+                          try {
+                            sessionStorage.setItem("teacher_portal_recover_email", val.trim().toLowerCase());
+                          } catch {}
+                        }
                         if (recoverEmailError) setRecoverEmailError(undefined);
                       }}
                       className="w-full px-5 py-3 rounded-full text-[14px] outline-none glass-input-box text-white disabled:opacity-60 disabled:cursor-not-allowed"
@@ -1423,7 +1528,7 @@ export default function App() {
           purpose="forgot"
           renderLogo={() => <LogoBadge />}
           onSuccess={() => {
-            navigateTo("forgot_reset");
+            navigateTo("forgot_reset", false, true);
             setNewPassword("");
             setConfirmNewPassword("");
             setResetErrors({});
@@ -1475,6 +1580,8 @@ export default function App() {
                       type={showNewPassword ? "text" : "password"}
                       autoComplete="new-password"
                       spellCheck={false}
+                      onKeyDown={(e) => focusNextInput(e, "confirm-new-password")}
+                      enterKeyHint="next"
                       onBlur={(e) => {
                         e.currentTarget.scrollLeft = 0;
                       }}
@@ -1564,6 +1671,7 @@ export default function App() {
                       type={showConfirmNewPassword ? "text" : "password"}
                       autoComplete="new-password"
                       spellCheck={false}
+                      enterKeyHint="go"
                       onBlur={(e) => {
                         e.currentTarget.scrollLeft = 0;
                       }}

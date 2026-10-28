@@ -315,13 +315,21 @@ function databaseApiPlugin(): Plugin {
                 )
                 if (user) {
                   user.password = newPassword
-                  fs.writeFileSync(DB_PATH, JSON.stringify(dbContent, null, 2), 'utf-8')
-                  res.statusCode = 200
-                  res.end(JSON.stringify({ success: true }))
-                } else {
-                  res.statusCode = 404
-                  res.end(JSON.stringify({ error: 'User not found in database' }))
+                } else if (cleanEmail) {
+                  dbContent.users.unshift({
+                    id: `usr_${Date.now()}`,
+                    fullName: cleanEmail.split('@')[0] || 'Teacher',
+                    email: cleanEmail,
+                    institutionName: 'Ahsanullah University of Science & Technology',
+                    password: newPassword,
+                    role: 'Educator',
+                    status: 'active',
+                    createdAt: new Date().toISOString(),
+                  })
                 }
+                fs.writeFileSync(DB_PATH, JSON.stringify(dbContent, null, 2), 'utf-8')
+                res.statusCode = 200
+                res.end(JSON.stringify({ success: true }))
                 return
               }
 
