@@ -2,6 +2,26 @@
   "description": "Teacher Portal User Database",
   "users": [
     {
+      "id": "usr_1793332023732",
+      "fullName": "sssd",
+      "email": "nowif81119@37xiao.com",
+      "institutionName": "ssssd",
+      "password": "1202324s@D",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-30T03:47:03.732Z"
+    },
+    {
+      "id": "usr_1793331012731",
+      "fullName": "ssd",
+      "email": "dehisor507@37xiao.com",
+      "institutionName": "XYZ University",
+      "password": "user",
+      "role": "Educator",
+      "status": "active",
+      "createdAt": "2026-10-30T03:30:12.731Z"
+    },
+    {
       "id": "usr_1793206216180",
       "fullName": "Sazid Rehan",
       "email": "itssrehann2324@gmail.com",

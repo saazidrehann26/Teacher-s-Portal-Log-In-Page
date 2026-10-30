@@ -74,19 +74,113 @@ interface RegisterFormErrors {
   general?: string;
 }
 
+export interface PasswordStrength {
+  score: number; // 0 to 5
+  label: "Weak" | "Fair" | "Strong" | "";
+  barColor: string;
+  textColor: string;
+  helperColor: string;
+  helperText: string;
+  isStrong: boolean;
+  rules: {
+    minLength: boolean;
+    hasUpper: boolean;
+    hasLower: boolean;
+    hasNumber: boolean;
+    hasSpecial: boolean;
+  };
+}
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_PASSWORD_LENGTH = 4;
+const MIN_PASSWORD_LENGTH = 8;
 
-function getPasswordStrength(password: string): { score: number; label: string } {
-  if (!password) return { score: 0, label: "" };
+function getPasswordStrength(password: string): PasswordStrength {
+  if (!password) {
+    return {
+      score: 0,
+      label: "",
+      barColor: "bg-white/20",
+      textColor: "text-zinc-400",
+      helperColor: "text-zinc-400",
+      helperText: "Enter a password with at least 8 characters.",
+      isStrong: false,
+      rules: {
+        minLength: false,
+        hasUpper: false,
+        hasLower: false,
+        hasNumber: false,
+        hasSpecial: false,
+      },
+    };
+  }
+
+  const minLength = password.length >= 8;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[^A-Za-z0-9\s]/.test(password);
+
   let score = 0;
-  if (password.length >= 8) score++;
-  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[^A-Za-z0-9]/.test(password)) score++;
+  if (minLength) score++;
+  if (hasUpper) score++;
+  if (hasLower) score++;
+  if (hasNumber) score++;
+  if (hasSpecial) score++;
 
-  const labels = ["", "Weak", "Fair", "Good", "Strong"];
-  return { score, label: labels[score] || "Strong" };
+  const missing: string[] = [];
+  if (!minLength) missing.push("at least 8 characters");
+  if (!hasUpper) missing.push("an uppercase letter");
+  if (!hasLower) missing.push("a lowercase letter");
+  if (!hasNumber) missing.push("a number");
+  if (!hasSpecial) missing.push("a special character (e.g., !@#$%^&*)");
+
+  let label: "Weak" | "Fair" | "Strong" = "Weak";
+  let barColor = "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.7)]";
+  let textColor = "text-rose-400";
+  let helperColor = "text-rose-300/90";
+
+  if (score >= 5) {
+    label = "Strong";
+    barColor = "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]";
+    textColor = "text-emerald-400";
+    helperColor = "text-emerald-300/90";
+  } else if (score >= 3) {
+    label = "Fair";
+    barColor = "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]";
+    textColor = "text-amber-400";
+    helperColor = "text-amber-300/90";
+  } else {
+    label = "Weak";
+    barColor = "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.7)]";
+    textColor = "text-rose-400";
+    helperColor = "text-rose-300/90";
+  }
+
+  let helperText = "";
+  if (score === 5) {
+    helperText = "Strong password! All criteria met.";
+  } else if (missing.length === 1) {
+    helperText = `Add ${missing[0]}`;
+  } else {
+    helperText = `Add ${missing.join(", ")}`;
+  }
+
+  return {
+    score,
+    label,
+    barColor,
+    textColor,
+    helperColor,
+    helperText,
+    isStrong: score === 5,
+    rules: {
+      minLength,
+      hasUpper,
+      hasLower,
+      hasNumber,
+      hasSpecial,
+    },
+  };
 }
 
 // ============================================================================
@@ -158,7 +252,6 @@ export default function App() {
 
   // Cinematic 3D spatial transition states
   const [panelAnimClass, setPanelAnimClass] = useState<string>("panel-spatial-enter");
-  const [_isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Clear entrance animation class once completed so cards release GPU 3D layer for razor-sharp native typography
@@ -215,7 +308,6 @@ export default function App() {
       setView((prev) => {
         if (prev !== targetView) {
           setPanelAnimClass("panel-spatial-exit");
-          setIsTransitioning(true);
           transitionTimerRef.current = setTimeout(() => {
             setView(targetView);
             if (targetView !== "login" && targetView !== "portal") {
@@ -223,7 +315,6 @@ export default function App() {
             }
             setPanelAnimClass("panel-spatial-enter");
             transitionTimerRef.current = setTimeout(() => {
-              setIsTransitioning(false);
               setPanelAnimClass("");
               transitionTimerRef.current = null;
             }, 300);
@@ -245,7 +336,6 @@ export default function App() {
       setView((prev) => {
         if (prev !== targetView) {
           setPanelAnimClass("panel-spatial-exit");
-          setIsTransitioning(true);
           transitionTimerRef.current = setTimeout(() => {
             setView(targetView);
             if (targetView !== "login" && targetView !== "portal") {
@@ -253,7 +343,6 @@ export default function App() {
             }
             setPanelAnimClass("panel-spatial-enter");
             transitionTimerRef.current = setTimeout(() => {
-              setIsTransitioning(false);
               setPanelAnimClass("");
               transitionTimerRef.current = null;
             }, 300);
@@ -300,7 +389,6 @@ export default function App() {
       }
       setView(newView);
       setPanelAnimClass("panel-spatial-enter");
-      setIsTransitioning(false);
       transitionTimerRef.current = setTimeout(() => {
         setPanelAnimClass("");
         transitionTimerRef.current = null;
@@ -308,7 +396,6 @@ export default function App() {
       return;
     }
 
-    setIsTransitioning(true);
     setPanelAnimClass("panel-spatial-exit");
 
     // Exit animation duration: 240ms (smoothly scales to 85% & fades out)
@@ -326,32 +413,16 @@ export default function App() {
 
       // Locks firmly in foreground after 300ms
       transitionTimerRef.current = setTimeout(() => {
-        setIsTransitioning(false);
         setPanelAnimClass("");
         transitionTimerRef.current = null;
       }, 300);
     }, 240);
   };
 
-  // Theme state: dark mode defaults to true for maximum backlit neon impact
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("theme");
-      if (saved) return saved === "dark";
-      return true;
-    }
-    return true;
-  });
-
+  // Enforce dark mode for the signature academic backlit neon glass theme
   useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDark]);
+    document.documentElement.classList.add("dark");
+  }, []);
 
   // --------------------------------------------------------------------------
   // 1. Login Form State
@@ -494,9 +565,10 @@ export default function App() {
     if (!cleanEmail) errs.email = "Institution or personal email is required.";
     else if (!EMAIL_REGEX.test(cleanEmail)) errs.email = "Please enter a valid email address.";
 
-    if (!regValues.password) errs.password = "Password is required.";
-    else if (regValues.password.length < MIN_PASSWORD_LENGTH) {
-      errs.password = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
+    if (!regValues.password) {
+      errs.password = "Password is required.";
+    } else if (!regPasswordStrength.isStrong) {
+      errs.password = "Password must meet all 5 criteria to be Strong before registering.";
     }
 
     if (!regValues.confirmPassword) errs.confirmPassword = "Please confirm your password.";
@@ -693,36 +765,6 @@ export default function App() {
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-transparent px-4 py-8 sm:px-6 lg:px-8 font-sans antialiased text-zinc-900 dark:text-zinc-100 transition-colors selection:bg-slate-400/40 selection:text-white">
       {/* Dark Academic Wallpaper & Glowing Neon Mathematical Formulas Layer */}
       <AcademicBackground />
-
-      {/* Theme Changing Button (Water Dewdrop Pill) */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
-        <button
-          type="button"
-          onClick={() => setIsDark(!isDark)}
-          onMouseDown={handleWaterRipple}
-          aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-          className="relative group flex items-center gap-2 px-4 py-2 rounded-full water-dewdrop-pill text-xs font-medium text-white shadow-lg cursor-pointer transition-all"
-        >
-          <div className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-          <span className="relative z-20 flex items-center gap-1.5 text-white">
-            {isDark ? (
-              <>
-                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <span className="text-white">Light</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-                <span className="text-white">Dark</span>
-              </>
-            )}
-          </span>
-        </button>
-      </div>
 
       {/* 3D Perspective Scene Container for Cinematic Spatial Transitions */}
       <div className="relative z-10 w-full flex justify-center perspective-spatial-container">
@@ -1189,24 +1231,51 @@ export default function App() {
                 </div>
 
                 {regValues.password.length > 0 && (
-                  <div className="mt-2 space-y-1 transition-all">
+                  <div className="mt-2.5 space-y-1.5 transition-all">
                     <div className="flex items-center justify-between text-[13px]">
-                      <span className="bright-body text-[13px]">Password strength</span>
-                      <span className="font-semibold text-[#ff66c4] drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">
+                      <span className="bright-body text-[13px] font-medium">Password strength</span>
+                      <span className={`font-semibold ${regPasswordStrength.textColor} drop-shadow-sm transition-colors`}>
                         {regPasswordStrength.label}
                       </span>
                     </div>
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {[1, 2, 3, 4].map((step) => {
+
+                    {/* 5-segment Real-time Visual Strength Meter */}
+                    <div
+                      className="grid grid-cols-5 gap-1.5"
+                      role="progressbar"
+                      aria-valuenow={regPasswordStrength.score}
+                      aria-valuemin={0}
+                      aria-valuemax={5}
+                      aria-label={`Password strength: ${regPasswordStrength.label}`}
+                    >
+                      {[1, 2, 3, 4, 5].map((step) => {
                         const isActive = regPasswordStrength.score >= step;
                         return (
-                          <div key={step} className="relative h-1.5 rounded-full overflow-hidden bg-white/20">
+                          <div key={step} className="relative h-1.5 rounded-full overflow-hidden bg-white/15">
                             {isActive && (
-                              <div className="h-full w-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 shadow-[0_0_8px_rgba(217,70,239,0.9)] transition-all duration-300" />
+                              <div
+                                className={`h-full w-full rounded-full ${regPasswordStrength.barColor} transition-all duration-300`}
+                              />
                             )}
                           </div>
                         );
                       })}
+                    </div>
+
+                    {/* Real-time Helper Text indicating what is missing or satisfied */}
+                    <div className="flex items-start gap-1.5 pt-0.5">
+                      {regPasswordStrength.isStrong ? (
+                        <svg className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className={`w-4 h-4 ${regPasswordStrength.textColor} flex-shrink-0 mt-0.5`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      )}
+                      <p className={`text-[12px] leading-snug ${regPasswordStrength.helperColor} drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]`}>
+                        {regPasswordStrength.helperText}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -1284,9 +1353,15 @@ export default function App() {
               <div className="relative pt-3">
                 <button
                   type="submit"
-                  disabled={isRegLoading}
-                  onMouseDown={handleWaterRipple}
-                  className="relative group w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isRegLoading || !regPasswordStrength.isStrong}
+                  onMouseDown={regPasswordStrength.isStrong ? handleWaterRipple : undefined}
+                  aria-disabled={isRegLoading || !regPasswordStrength.isStrong}
+                  title={
+                    !regPasswordStrength.isStrong
+                      ? "Password must reach Strong criteria (all 5 requirements) to register"
+                      : undefined
+                  }
+                  className="relative group w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[15px] font-medium text-white shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div
                     className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
@@ -1334,6 +1409,7 @@ export default function App() {
             subtitle="Check your email and put down the OTP"
             showStaggeredDots={false}
             purpose="register"
+            showSubmitButton={false}
             renderLogo={() => <LogoBadge />}
             onSuccess={() => {
               const dataToSave =
@@ -1526,6 +1602,7 @@ export default function App() {
           subtitle="Check your email and put down the OTP"
           showStaggeredDots={true}
           purpose="forgot"
+          showSubmitButton={false}
           renderLogo={() => <LogoBadge />}
           onSuccess={() => {
             navigateTo("forgot_reset", false, true);
@@ -1617,24 +1694,47 @@ export default function App() {
                 </div>
 
                 {newPassword.length > 0 && (
-                  <div className="mt-2 space-y-1 transition-all">
+                  <div className="mt-2.5 space-y-1.5 transition-all">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="bright-body text-xs">Password strength</span>
-                      <span className="font-semibold text-[#ff66c4] drop-shadow-[0_0_8px_rgba(255,102,196,0.9)]">
+                      <span className="bright-body text-xs font-medium">Password strength</span>
+                      <span className={`font-semibold ${newPasswordStrength.textColor} drop-shadow-sm transition-colors`}>
                         {newPasswordStrength.label}
                       </span>
                     </div>
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {[1, 2, 3, 4].map((step) => {
+                    <div
+                      className="grid grid-cols-5 gap-1.5"
+                      role="progressbar"
+                      aria-valuenow={newPasswordStrength.score}
+                      aria-valuemin={0}
+                      aria-valuemax={5}
+                      aria-label={`Password strength: ${newPasswordStrength.label}`}
+                    >
+                      {[1, 2, 3, 4, 5].map((step) => {
                         const isActive = newPasswordStrength.score >= step;
                         return (
-                          <div key={step} className="relative h-1.5 rounded-full overflow-hidden bg-white/20">
+                          <div key={step} className="relative h-1.5 rounded-full overflow-hidden bg-white/15">
                             {isActive && (
-                              <div className="h-full w-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 shadow-[0_0_8px_rgba(217,70,239,0.9)] transition-all duration-300" />
+                              <div
+                                className={`h-full w-full rounded-full ${newPasswordStrength.barColor} transition-all duration-300`}
+                              />
                             )}
                           </div>
                         );
                       })}
+                    </div>
+                    <div className="flex items-start gap-1.5 pt-0.5">
+                      {newPasswordStrength.isStrong ? (
+                        <svg className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className={`w-3.5 h-3.5 ${newPasswordStrength.textColor} flex-shrink-0 mt-0.5`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      )}
+                      <p className={`text-[11.5px] leading-snug ${newPasswordStrength.helperColor} drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]`}>
+                        {newPasswordStrength.helperText}
+                      </p>
                     </div>
                   </div>
                 )}

@@ -19,6 +19,7 @@ export interface OtpVerificationProps {
   subtitle?: string;
   showStaggeredDots?: boolean;
   purpose?: "register" | "forgot";
+  showSubmitButton?: boolean;
 }
 
 // EmailJS Credentials
@@ -46,6 +47,7 @@ export default function OtpVerification({
   subtitle = "Check your email and put down the OTP",
   showStaggeredDots,
   purpose = "forgot",
+  showSubmitButton = false,
 }: OtpVerificationProps) {
   const isUnmountedRef = useRef(false);
   useEffect(() => {
@@ -248,7 +250,57 @@ export default function OtpVerification({
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  // Handle single-digit input change with auto-advance
+  // Helper to validate code across memory, sessionStorage, and component state
+  const checkOtpValid = useCallback(
+    (code: string): boolean => {
+      if (code.length !== 5) return false;
+      if (generatedOtp && code === generatedOtp) return true;
+      try {
+        const raw = sessionStorage.getItem("teacher_portal_active_otp");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.code === code && Date.now() <= parsed.expiresAt) {
+            return true;
+          }
+        }
+      } catch {}
+      const recent = lastSentTimestamps.get(cleanEmail);
+      if (recent && recent.code === code) {
+        return true;
+      }
+      return false;
+    },
+    [cleanEmail, generatedOtp]
+  );
+
+  // Auto-verify as soon as user enters 5 digits
+  const verifyOtpCode = useCallback(
+    (fullOtp: string) => {
+      if (fullOtp.length < 5) {
+        return;
+      }
+
+      if (timerSeconds <= 0) {
+        setOtpError("Your 5-minute OTP code has expired. Please click 'Resend Code'.");
+        return;
+      }
+
+      const isValid = checkOtpValid(fullOtp);
+
+      if (isValid) {
+        setOtpError(undefined);
+        setIsVerifying(true);
+        // Validated successfully! Immediately trigger onSuccess without needing to press any button
+        onSuccess();
+        return;
+      }
+
+      setOtpError("Invalid verification code. Please check your email and try again.");
+    },
+    [checkOtpValid, timerSeconds, onSuccess]
+  );
+
+  // Handle single-digit input change with auto-advance and instant auto-submit on 5th digit
   const handleOtpChange = (index: number, val: string) => {
     const digit = val.slice(-1).replace(/[^0-9]/g, "");
     const newOtp = [...otp];
@@ -258,6 +310,11 @@ export default function OtpVerification({
 
     if (digit && index < 4) {
       document.getElementById(`otp-box-${index + 1}`)?.focus();
+    }
+
+    const fullCode = newOtp.join("");
+    if (fullCode.length === 5) {
+      verifyOtpCode(fullCode);
     }
   };
 
@@ -283,7 +340,7 @@ export default function OtpVerification({
     }
   };
 
-  // Handle Pasting full 5-digit OTP
+  // Handle Pasting full 5-digit OTP with instant auto-submit
   const handleOtpPaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pasted = e.clipboardData.getData("text").replace(/[^0-9]/g, "").slice(0, 5);
@@ -298,6 +355,11 @@ export default function OtpVerification({
 
     const nextIdx = Math.min(pasted.length, 4);
     document.getElementById(`otp-box-${nextIdx}`)?.focus();
+
+    const fullCode = newOtp.join("");
+    if (fullCode.length === 5) {
+      verifyOtpCode(fullCode);
+    }
   };
 
   // Handle Resending Code
@@ -333,8 +395,8 @@ export default function OtpVerification({
     }
   };
 
-  // Handle OTP Submission (Continue Button)
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  // Handle OTP Submission (Enter key or optional button)
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fullOtp = otp.join("");
 
@@ -343,48 +405,7 @@ export default function OtpVerification({
       return;
     }
 
-    if (timerSeconds <= 0) {
-      setOtpError("Your 5-minute OTP code has expired. Please click 'Resend Code'.");
-      return;
-    }
-
-    setIsVerifying(true);
-    setOtpError(undefined);
-
-    try {
-      // Simulate network request delay for UX
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      // Verify code against generated state or active session
-      let isValid = fullOtp === generatedOtp;
-      if (!isValid) {
-        try {
-          const raw = sessionStorage.getItem("teacher_portal_active_otp");
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed.code === fullOtp && Date.now() <= parsed.expiresAt) {
-              isValid = true;
-            }
-          }
-        } catch {}
-      }
-
-      if (isValid) {
-        // Validated successfully! Advance view immediately without resetting button state
-        onSuccess();
-        return;
-      }
-
-      setOtpError("Invalid verification code. Please check your email and try again.");
-      if (!isUnmountedRef.current) {
-        setIsVerifying(false);
-      }
-    } catch {
-      if (!isUnmountedRef.current) {
-        setOtpError("Verification failed. Please try again.");
-        setIsVerifying(false);
-      }
-    }
+    verifyOtpCode(fullOtp);
   };
 
   return (
@@ -527,33 +548,35 @@ export default function OtpVerification({
             </p>
           </div>
 
-          {/* Action Button at Middle Bottom: "Continue" */}
-          <div className="relative pt-1">
-            <button
-              type="submit"
-              disabled={isVerifying}
-              onMouseDown={handleWaterRipple}
-              className="relative group w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[14px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div
-                className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                aria-hidden="true"
-              />
-              <span className="relative z-20 flex items-center justify-center gap-2 text-white">
-                {isVerifying ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <span>Verifying code...</span>
-                  </>
-                ) : (
-                  "Continue"
-                )}
-              </span>
-            </button>
-          </div>
+          {/* Action Button at Middle Bottom (Omitted for email verification as OTP auto-verifies upon 5th digit) */}
+          {showSubmitButton && (
+            <div className="relative pt-1">
+              <button
+                type="submit"
+                disabled={isVerifying}
+                onMouseDown={handleWaterRipple}
+                className="relative group w-full flex items-center justify-center py-3.5 px-4 rounded-full water-dewdrop-pill text-[14px] font-medium text-white shadow-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div
+                  className="absolute -inset-0.5 rounded-full button-streak-overlay blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  aria-hidden="true"
+                />
+                <span className="relative z-20 flex items-center justify-center gap-2 text-white">
+                  {isVerifying ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span>Verifying code...</span>
+                    </>
+                  ) : (
+                    "Continue"
+                  )}
+                </span>
+              </button>
+            </div>
+          )}
           
         </form>
 

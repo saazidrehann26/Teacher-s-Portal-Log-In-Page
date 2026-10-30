@@ -449,10 +449,7 @@ input:-webkit-autofill:active {
 /* Water Dewdrop Frosted Pill (Unified Button Style for All Controls)           */
 /* ============================================================================ */
 
-.water-dewdrop-pill,
-.btn-magenta-backlit,
-.water-button,
-.glass-button-glow {
+.water-dewdrop-pill {
   position: relative;
   overflow: hidden !important;
   isolation: isolate;
@@ -480,10 +477,7 @@ input:-webkit-autofill:active {
 
 /* Pseudo-element holding the authentic purple rgb(86, 47, 122) backlight */
 /* Only fades in when cursor hovers or user clicks */
-.water-dewdrop-pill::before,
-.btn-magenta-backlit::before,
-.water-button::before,
-.glass-button-glow::before {
+.water-dewdrop-pill::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -498,20 +492,8 @@ input:-webkit-autofill:active {
 }
 
 /* Hover & Focus state: rich purple color appears & button animates upward */
-button.water-dewdrop-pill:hover,
-a.water-dewdrop-pill:hover,
-.water-dewdrop-pill.cursor-pointer:hover,
-.water-dewdrop-pill[role="button"]:hover,
-.btn-magenta-backlit:hover,
-.water-button:hover,
-.glass-button-glow:hover,
-button.water-dewdrop-pill:focus-visible,
-a.water-dewdrop-pill:focus-visible,
-.water-dewdrop-pill.cursor-pointer:focus-visible,
-.water-dewdrop-pill[role="button"]:focus-visible,
-.btn-magenta-backlit:focus-visible,
-.water-button:focus-visible,
-.glass-button-glow:focus-visible {
+.water-dewdrop-pill:hover,
+.water-dewdrop-pill:focus-visible {
   color: #ffffff !important;
   text-shadow: 0 1px 3px rgba(35, 20, 50, 0.95), 0 0 10px rgba(210, 130, 255, 0.5);
   transform: translateY(-3px) scale(1.01) !important;
@@ -524,31 +506,13 @@ a.water-dewdrop-pill:focus-visible,
     0 10px 28px rgba(0, 0, 0, 0.55) !important;
 }
 
-button.water-dewdrop-pill:hover::before,
-a.water-dewdrop-pill:hover::before,
-.water-dewdrop-pill.cursor-pointer:hover::before,
-.water-dewdrop-pill[role="button"]:hover::before,
-.btn-magenta-backlit:hover::before,
-.water-button:hover::before,
-.glass-button-glow:hover::before,
-button.water-dewdrop-pill:focus-visible::before,
-a.water-dewdrop-pill:focus-visible::before,
-.water-dewdrop-pill.cursor-pointer:focus-visible::before,
-.water-dewdrop-pill[role="button"]:focus-visible::before,
-.btn-magenta-backlit:focus-visible::before,
-.water-button:focus-visible::before,
-.glass-button-glow:focus-visible::before {
+.water-dewdrop-pill:hover::before,
+.water-dewdrop-pill:focus-visible::before {
   opacity: 1;
 }
 
 /* Active / Click state: button floats further upward upon click */
-button.water-dewdrop-pill:active,
-a.water-dewdrop-pill:active,
-.water-dewdrop-pill.cursor-pointer:active,
-.water-dewdrop-pill[role="button"]:active,
-.btn-magenta-backlit:active,
-.water-button:active,
-.glass-button-glow:active {
+.water-dewdrop-pill:active {
   color: #ffffff !important;
   text-shadow: 0 1px 3px rgba(35, 20, 50, 0.95), 0 0 8px rgba(0, 0, 0, 0.6);
   transform: translateY(-4.5px) scale(1.018) !important;
@@ -561,13 +525,7 @@ a.water-dewdrop-pill:active,
   transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.1s ease !important;
 }
 
-button.water-dewdrop-pill:active::before,
-a.water-dewdrop-pill:active::before,
-.water-dewdrop-pill.cursor-pointer:active::before,
-.water-dewdrop-pill[role="button"]:active::before,
-.btn-magenta-backlit:active::before,
-.water-button:active::before,
-.glass-button-glow:active::before {
+.water-dewdrop-pill:active::before {
   opacity: 1;
   background:
     radial-gradient(ellipse 95% 55% at 50% 0%, rgba(255, 255, 255, 0.20) 0%, rgba(180, 150, 210, 0.10) 45%, transparent 75%),
@@ -587,10 +545,7 @@ a.water-dewdrop-pill:active::before,
   color: #ffffff !important;
 }
 
-.water-dewdrop-pill:disabled,
-.btn-magenta-backlit:disabled,
-.water-button:disabled,
-.glass-button-glow:disabled {
+.water-dewdrop-pill:disabled {
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
@@ -628,26 +583,6 @@ a.water-dewdrop-pill:active::before,
     transform: scale(1);
     opacity: 0;
   }
-}
-
-/* Subtle Neon Formula Floating Animation */
-@keyframes formulaFloatSlow {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-    opacity: 0.26;
-  }
-  50% {
-    transform: translateY(-8px) rotate(1deg);
-    opacity: 0.45;
-  }
-}
-
-.formula-float {
-  animation: formulaFloatSlow 8s ease-in-out infinite;
-}
-
-.formula-float-alt {
-  animation: formulaFloatSlow 11s ease-in-out infinite reverse;
 }
 
 /* ============================================================================ */
