@@ -1,11 +1,8 @@
 // ============================================================================
 // Teacher Portal Database Service
 // Persistently stores teacher accounts
-// Syncs with browser localStorage, Supabase Cloud Database, and Vite API
+// Syncs with browser localStorage and the project database file via Vite API
 // ============================================================================
-
-import { supabase, isSupabaseConfigured } from "./supabaseClient";
-export { supabase, isSupabaseConfigured };
 
 export interface TeacherUser {
   id: string;
@@ -147,37 +144,6 @@ export function saveUserToDatabase(newUser: {
     }).catch(() => {
       // offline/fallback to localStorage
     });
-
-    // Asynchronously persist to Supabase teachers table if configured
-    if (supabase) {
-      Promise.resolve(
-        supabase
-          .from("teachers")
-          .upsert(
-            {
-              id: user.id,
-              full_name: user.fullName,
-              email: user.email,
-              institution_name: user.institutionName,
-              password: user.password,
-              role: user.role,
-              status: user.status,
-              created_at: user.createdAt,
-            },
-            { onConflict: "email" }
-          )
-      )
-        .then(({ error }) => {
-          if (error) {
-            console.warn("[Supabase] Upsert warning:", error.message);
-          } else {
-            console.log("[Supabase] Teacher record saved to cloud database:", user.email);
-          }
-        })
-        .catch((err: unknown) => {
-          console.warn("[Supabase] Upsert exception:", err);
-        });
-    }
   }
 
   return user;
@@ -241,73 +207,16 @@ export function updateUserPasswordInDatabase(email: string, newPassword: string)
     }).catch(() => {
       // offline/fallback
     });
-
-    // Asynchronously update password in Supabase teachers table if configured
-    if (supabase) {
-      Promise.resolve(
-        supabase
-          .from("teachers")
-          .update({ password: newPassword })
-          .eq("email", cleanEmail)
-      )
-        .then(({ error }) => {
-          if (error) {
-            console.warn("[Supabase] Password update warning:", error.message);
-          } else {
-            console.log("[Supabase] Password updated in cloud database for:", cleanEmail);
-          }
-        })
-        .catch((err: unknown) => {
-          console.warn("[Supabase] Password update exception:", err);
-        });
-    }
   }
 
   return true;
 }
 
 /**
- * Syncs the database with Supabase cloud database and/or the server's database.json on startup.
+ * Syncs the database with the server's database.json on startup.
  */
 export async function syncDatabaseWithServer(): Promise<TeacherUser[]> {
   if (typeof window === "undefined") return INITIAL_DATABASE;
-
-  // 1. If Supabase is configured, fetch live teachers from Supabase cloud database
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.from("teachers").select("*");
-      if (!error && Array.isArray(data) && data.length > 0) {
-        const cloudUsers: TeacherUser[] = data.map((row: Record<string, unknown>) => ({
-          id: String(row.id || `usr_${Date.now()}`),
-          fullName: String(row.full_name || row.fullName || ""),
-          email: String(row.email || "").toLowerCase(),
-          institutionName: String(row.institution_name || row.institutionName || ""),
-          password: typeof row.password === "string" ? row.password : undefined,
-          role: String(row.role || "Educator"),
-          status: String(row.status || "active"),
-          createdAt: typeof row.created_at === "string" ? row.created_at : new Date().toISOString(),
-        }));
-
-        const localUsers = getDatabaseUsers();
-        const mergedMap = new Map<string, TeacherUser>();
-        for (const u of cloudUsers) {
-          if (u.email) mergedMap.set(u.email.toLowerCase(), u);
-        }
-        for (const u of localUsers) {
-          if (u.email && !mergedMap.has(u.email.toLowerCase())) {
-            mergedMap.set(u.email.toLowerCase(), u);
-          }
-        }
-        const mergedList = Array.from(mergedMap.values());
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedList));
-        return mergedList;
-      }
-    } catch (err: unknown) {
-      console.warn("[Supabase] Cloud sync notice:", err);
-    }
-  }
-
-  // 2. Fallback to local Vite API middleware database.json
   try {
     const res = await fetch("/api/database");
     if (!res.ok) return getDatabaseUsers();
@@ -330,7 +239,7 @@ export async function syncDatabaseWithServer(): Promise<TeacherUser[]> {
       return mergedList;
     }
   } catch {
-    // Ignore network errors in local dev / static deployment
+    // Ignore network errors in local dev
   }
   return getDatabaseUsers();
 }
